@@ -4,6 +4,7 @@ version: 0.0.4-dev
 homepage: https://clerk.com/docs
 repository: https://github.com/clerk/clerk-sdk-flutter/tree/main/packages/clerk_flutter
 issue_tracker: https://github.com/clerk/clerk-sdk-flutter/labels/clerk_flutter
+publish_to: none
 topics:
   - authentication
 
@@ -14,7 +15,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  clerk_auth: ^0.0.4-dev
+  clerk_auth:
+    git:
+      url: https://github.com/clerk/clerk-sdk-flutter.git
+      path: packages/clerk_auth
+      ref: main
   collection: ^1.17.1
   email_validator: ^3.0.0
   flutter_inset_box_shadow: ^1.0.8
