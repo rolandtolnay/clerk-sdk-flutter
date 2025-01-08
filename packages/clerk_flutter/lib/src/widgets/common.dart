@@ -1,8 +1,7 @@
 // ignore_for_file: public_member_api_docs
 
 import 'package:clerk_flutter/src/widgets/ui/style/colors.dart';
-import 'package:flutter/material.dart' hide BoxDecoration, BoxShadow;
-import 'package:flutter_inset_box_shadow/flutter_inset_box_shadow.dart';
+import 'package:flutter/material.dart';
 import 'package:phone_input/phone_input_package.dart';
 
 extension NullExtension on String {
@@ -36,13 +35,11 @@ const insetBoxShadow = [
     color: ClerkColors.seashell,
     blurRadius: 5.0,
     offset: Offset(1.0, 1.0),
-    inset: true,
   ),
   BoxShadow(
     color: ClerkColors.seashell,
     blurRadius: 5.0,
     offset: Offset(-1.0, -1.0),
-    inset: true,
   ),
 ];
 
