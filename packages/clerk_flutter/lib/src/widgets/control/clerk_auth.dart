@@ -129,6 +129,16 @@ class _ClerkAuthState extends State<ClerkAuth> {
             },
           );
         }
+        if (snapshot.hasError) {
+          FlutterError.presentError(
+            FlutterErrorDetails(
+              exception: snapshot.error!,
+              stack: snapshot.stackTrace,
+              library: 'clerk_flutter',
+              context: ErrorDescription('Error initializing ClerkAuth'),
+            ),
+          );
+        }
         return widget.loading ?? emptyWidget;
       },
     );
