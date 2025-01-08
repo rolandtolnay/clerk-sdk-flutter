@@ -27,7 +27,6 @@ class DisplayConfig {
     this.clerkJsVersion = '',
     this.createOrganizationUrl = '',
     this.faviconImageUrl = '',
-    this.faviconImage = '',
     this.faviconUrl = '',
     this.googleOneTapClientId = '',
     this.helpUrl = '',
@@ -102,9 +101,6 @@ class DisplayConfig {
 
   /// favicon image url
   final String? faviconImageUrl;
-
-  /// favicon image
-  final String? faviconImage;
 
   /// favicon url
   final String? faviconUrl;
