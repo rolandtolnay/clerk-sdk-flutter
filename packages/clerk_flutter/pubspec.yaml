@@ -16,10 +16,7 @@ dependencies:
   flutter:
     sdk: flutter
   clerk_auth:
-    git:
-      url: https://github.com/clerk/clerk-sdk-flutter.git
-      path: packages/clerk_auth
-      ref: main
+    path: ../clerk_auth
   collection: ^1.17.1
   email_validator: ^3.0.0
   flutter_svg: ^2.0.10+1

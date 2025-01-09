@@ -2,6 +2,7 @@ name: clerk_sdk
 
 packages:
   - packages/**
+  - example/**
 
 ide:
   intellij:
@@ -31,7 +32,7 @@ scripts:
   brunner:
     run: melos exec -o -- fvm dart run build_runner build --delete-conflicting-outputs
     packageFilters:
-      scope: "clerk_auth"
+      scope: 'clerk_auth'
 
   # Format code
   format:
