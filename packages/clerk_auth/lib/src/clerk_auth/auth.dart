@@ -401,6 +401,13 @@ class Auth {
     update();
   }
 
+  /// Return the [sessionToken] for the current active [Session], refreshing it
+  /// if required
+  ///
+  Future<String?> sessionToken() async {
+    return await _api.sessionToken();
+  }
+
   Future<Client> _pollForCompletion() async {
     while (true) {
       final client = await _api.currentClient();
