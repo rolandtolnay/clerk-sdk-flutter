@@ -95,5 +95,5 @@ class LogPrinter extends Printer {
   const LogPrinter();
 
   @override
-  void print(String output) => print(output);
+  void print(String output) => debugPrint(output);
 }
