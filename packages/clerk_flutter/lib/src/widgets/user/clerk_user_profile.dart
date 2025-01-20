@@ -11,12 +11,18 @@ import 'package:phone_input/phone_input_package.dart';
 /// [ClerkUserProfile] displays user details
 /// and allows their editing
 ///
-class ClerkUserProfile extends StatelessWidget {
+class ClerkUserProfile extends StatefulWidget {
   /// Construct a [ClerkUserProfile]
   const ClerkUserProfile({super.key});
 
   static const _paddedDivider = Padding(padding: topPadding16, child: divider);
 
+  @override
+  State<ClerkUserProfile> createState() => _ClerkUserProfileState();
+}
+
+class _ClerkUserProfileState extends State<ClerkUserProfile>
+    with ClerkTelemetryStateMixin {
   bool _validate(String? identifier, clerk.IdentifierType type) {
     if (identifier?.trim() case String identifier when identifier.isNotEmpty) {
       switch (type) {
@@ -36,7 +42,7 @@ class ClerkUserProfile extends StatelessWidget {
 
   Future<void> _verifyIdentifyingData(
     BuildContext context,
-    ClerkAuthProvider auth,
+    ClerkAuthState auth,
     String identifier,
   ) async {
     final translator = auth.translator;
@@ -66,11 +72,11 @@ class ClerkUserProfile extends StatelessWidget {
 
   Future<void> _addIdentifyingData(
     BuildContext context,
-    ClerkAuthProvider auth,
+    ClerkAuthState auth,
     clerk.IdentifierType type,
   ) async {
-    final auth = ClerkAuth.of(context, listen: false);
-    final translator = auth.translator;
+    final authState = ClerkAuth.of(context, listen: false);
+    final translator = authState.translator;
     final title = type.name.replaceAll('_', ' ').capitalized;
 
     String identifier = '';
@@ -101,9 +107,9 @@ class ClerkUserProfile extends StatelessWidget {
 
     if (submitted) {
       if (_validate(identifier, type)) {
-        await auth.addIdentifyingData(identifier, type);
+        await authState.addIdentifyingData(identifier, type);
         if (context.mounted) {
-          await _verifyIdentifyingData(context, auth, identifier);
+          await _verifyIdentifyingData(context, authState, identifier);
         }
       } else {
         throw clerk.AuthError(
@@ -134,7 +140,7 @@ class ClerkUserProfile extends StatelessWidget {
                 maxLines: 1,
                 style: ClerkTextStyle.title,
               ),
-              _paddedDivider,
+              ClerkUserProfile._paddedDivider,
               Expanded(
                 child: ListView(
                   children: [
@@ -142,7 +148,7 @@ class ClerkUserProfile extends StatelessWidget {
                       title: translator.translate('Profile'),
                       child: _EditableUserData(user: user),
                     ),
-                    _paddedDivider,
+                    ClerkUserProfile._paddedDivider,
                     _ProfileRow(
                       title: translator.translate('Email address'),
                       child: _IdentifierData(
@@ -159,7 +165,7 @@ class ClerkUserProfile extends StatelessWidget {
                         },
                       ),
                     ),
-                    _paddedDivider,
+                    ClerkUserProfile._paddedDivider,
                     _ProfileRow(
                       title: translator.translate('Phone numbers'),
                       child: _IdentifierData(
@@ -354,12 +360,12 @@ class _EditableUserDataState extends State<_EditableUserData> {
 
   Future<void> _update([_]) async {
     if (isEditing) {
-      final auth = ClerkAuth.of(context, listen: false);
+      final authState = ClerkAuth.of(context, listen: false);
       if (_controller.text != widget.user.name) {
-        await auth.updateUserName(_controller.text);
+        await authState.updateUserName(_controller.text);
       }
       if (image case File image) {
-        await auth.updateUserImage(image);
+        await authState.updateUserImage(image);
       }
     }
     if (context.mounted) {

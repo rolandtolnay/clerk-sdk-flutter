@@ -1,8 +1,14 @@
+import 'dart:io';
+
 import 'package:clerk_auth/clerk_auth.dart';
 
 Future<void> main() async {
   final api = Api(
     publishableKey: '<YOUR-PUBLISHABLE-KEY>',
+    persistor: await DefaultPersistor.create(
+      storageDirectory: Directory.current,
+    ),
+    httpService: const DefaultHttpService(),
   );
 
   final response = await api.createSignIn(identifier: '<USER-EMAIL>');

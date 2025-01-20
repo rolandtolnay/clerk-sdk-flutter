@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:clerk_auth/src/clerk_auth/http_client.dart';
+import 'package:clerk_auth/src/clerk_auth/http_service.dart';
 import 'package:clerk_auth/src/utils/logging.dart';
 import 'package:dart_dotenv/dart_dotenv.dart';
-import 'package:http/http.dart' show Response;
+import 'package:http/http.dart' show ByteStream, Response;
 
 class TestEnv {
   TestEnv._(this._map);
@@ -34,7 +34,7 @@ class TestLogPrinter extends Printer {
   }
 }
 
-class TestHttpClient implements HttpClient {
+class TestHttpService implements HttpService {
   final _expectations = <String, List<Response>>{};
 
   @override
@@ -43,6 +43,7 @@ class TestHttpClient implements HttpClient {
     Uri uri, {
     Map<String, String>? headers,
     Map<String, dynamic>? params,
+    String? body,
   }) async {
     final key = _key(method, uri, headers, params);
 
@@ -50,7 +51,7 @@ class TestHttpClient implements HttpClient {
       final resp = resps.removeAt(0);
       return Future.value(resp);
     }
-    throw TestHttpClientError(message: 'No response available for $key');
+    throw TestHttpServiceError(message: 'No response available for $key');
   }
 
   void expect(String key, int status, String body) {
@@ -99,10 +100,11 @@ class TestHttpClient implements HttpClient {
       map.entries.map((me) => '${me.key}=${me.value}').join('&');
 
   @override
-  Future<Response> sendFile(
+  Future<Response> sendByteStream(
     HttpMethod method,
     Uri uri,
-    File file,
+    ByteStream stream,
+    int length,
     Map<String, String> headers,
   ) {
     // TODO: add tests for sendFile
@@ -110,11 +112,11 @@ class TestHttpClient implements HttpClient {
   }
 }
 
-class TestHttpClientError extends Error {
-  TestHttpClientError({required this.message});
+class TestHttpServiceError extends Error {
+  TestHttpServiceError({required this.message});
 
   final String message;
 
   @override
-  String toString() => 'TestHttpClientError: $message';
+  String toString() => '$runtimeType: $message';
 }

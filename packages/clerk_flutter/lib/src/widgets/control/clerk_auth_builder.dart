@@ -4,17 +4,15 @@ import 'package:flutter/material.dart';
 
 /// Typedef for builder invoked by [ClerkAuthBuilder]
 typedef AuthWidgetBuilder = Widget Function(
-  BuildContext context,
-  ClerkAuthProvider auth,
-);
+    BuildContext context, ClerkAuthState authState);
 
-/// A [Widget] which builds its subtree in the context of a [ClerkAuthProvider]
+/// A [Widget] which builds its subtree in the context of a [ClerkAuthState]
 ///
 /// the [signedInBuilder] will be invoked when a [clerk.User] is available
 /// the [signedOutBuilder] will be invoked when a [clerk.User] is not available
 /// the [builder] will be invoked if neither of the other two are present
 ///
-class ClerkAuthBuilder extends StatelessWidget {
+class ClerkAuthBuilder extends StatefulWidget {
   /// Construct a [ClerkAuthBuilder]
   const ClerkAuthBuilder({
     super.key,
@@ -33,20 +31,36 @@ class ClerkAuthBuilder extends StatelessWidget {
   final AuthWidgetBuilder? builder;
 
   @override
-  Widget build(BuildContext context) {
-    final auth = ClerkAuth.of(context);
-    final user = auth.client.user;
+  State<ClerkAuthBuilder> createState() => _ClerkAuthBuilderState();
+}
 
-    if (signedInBuilder case AuthWidgetBuilder signedInBuilder
+class _ClerkAuthBuilderState extends State<ClerkAuthBuilder>
+    with ClerkTelemetryStateMixin {
+  @override
+  Map<String, dynamic> get telemetryPayload {
+    return {
+      'user_is_signed_in': ClerkAuth.of(context).user is clerk.User,
+      'signed_in_builder': widget.signedInBuilder is AuthWidgetBuilder,
+      'signed_out_builder': widget.signedOutBuilder is AuthWidgetBuilder,
+      'builder': widget.builder is AuthWidgetBuilder,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final authState = ClerkAuth.of(context);
+    final user = authState.client.user;
+
+    if (widget.signedInBuilder case AuthWidgetBuilder signedInBuilder
         when user is clerk.User) {
-      return signedInBuilder(context, auth);
-    } else if (signedOutBuilder case AuthWidgetBuilder signedOutBuilder
-        when user is! clerk.User) {
-      return signedOutBuilder(context, auth);
-    } else if (builder case AuthWidgetBuilder builder) {
-      return builder(context, auth);
+      return signedInBuilder(context, authState);
     }
 
-    return emptyWidget;
+    if (widget.signedOutBuilder case AuthWidgetBuilder signedOutBuilder
+        when user is! clerk.User) {
+      return signedOutBuilder(context, authState);
+    }
+
+    return widget.builder?.call(context, authState) ?? emptyWidget;
   }
 }

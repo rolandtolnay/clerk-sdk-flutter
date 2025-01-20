@@ -11,14 +11,14 @@ class ClerkAuth extends StatefulWidget {
     super.key,
     this.publishableKey,
     this.pollMode = clerk.SessionTokenPollMode.onDemand,
-    this.auth,
+    this.authState,
     this.translator = const DefaultClerkTranslator(),
     this.persistor,
     this.loading,
     required this.child,
   }) : assert(
-          (publishableKey is String) != (auth is ClerkAuthProvider),
-          'Either publishableKey or an auth instance must '
+          (publishableKey is String) != (authState is ClerkAuthState),
+          'Either [publishableKey] or an [authState] instance must '
           'be provided, but not both',
         );
 
@@ -26,7 +26,7 @@ class ClerkAuth extends StatefulWidget {
   final String? publishableKey;
 
   /// auth instance from elsewhere
-  final ClerkAuthProvider? auth;
+  final ClerkAuthState? authState;
 
   /// Persistence service for caching tokens
   final clerk.Persistor? persistor;
@@ -46,14 +46,14 @@ class ClerkAuth extends StatefulWidget {
   @override
   State<ClerkAuth> createState() => _ClerkAuthState();
 
-  /// Get the [context]'s nearest [ClerkAuthProvider]
+  /// Get the [context]'s nearest [ClerkAuthState]
   /// with rebuild on change
-  static ClerkAuthProvider of(BuildContext context, {bool listen = true}) {
+  static ClerkAuthState of(BuildContext context, {bool listen = true}) {
     final result = listen //
         ? context.dependOnInheritedWidgetOfExactType<_ClerkAuthData>()
         : context.findAncestorWidgetOfExactType<_ClerkAuthData>();
-    assert(result != null, 'No `ClerkAuthProvider` found in context');
-    return result!.auth;
+    assert(result != null, 'No `ClerkAuth` found in context');
+    return result!.authState;
   }
 
   /// Get the most recent [clerk.User] object
@@ -62,13 +62,13 @@ class ClerkAuth extends StatefulWidget {
   /// Get the most recent [clerk.Session] object
   static clerk.Session? sessionOf(BuildContext context) => of(context).session;
 
-  /// Get the [context]'s nearest [ClerkAuthProvider]
+  /// Get the [context]'s nearest [ClerkAuthState]
   /// without rebuild on change
   @Deprecated('Use .of() instead with listen = false')
-  static ClerkAuthProvider above(BuildContext context) {
+  static ClerkAuthState above(BuildContext context) {
     final result = context.findAncestorWidgetOfExactType<_ClerkAuthData>();
-    assert(result != null, 'No `ClerkAuthProvider` found in context');
-    return result!.auth;
+    assert(result != null, 'No `ClerkAuth` found in context');
+    return result!.authState;
   }
 
   /// Get the [ClerkTranslator]
@@ -84,77 +84,71 @@ class ClerkAuth extends StatefulWidget {
       of(context, listen: false).errorStream;
 }
 
-class _ClerkAuthState extends State<ClerkAuth> {
-  final _completer = Completer<ClerkAuthProvider>();
+class _ClerkAuthState extends State<ClerkAuth> with ClerkTelemetryStateMixin {
+  ClerkAuthState? _clerkAuthState;
+
+  ClerkAuthState? get effectiveAuthState => widget.authState ?? _clerkAuthState;
+
+  @override
+  Map<String, dynamic> get telemetryPayload {
+    return {
+      'poll_mode': widget.pollMode.toString(),
+      'primary_instance': widget.authState == null,
+    };
+  }
 
   @override
   void initState() {
     super.initState();
-    if (widget.auth == null) {
-      ClerkAuthProvider.create(
+    if (widget.authState == null) {
+      ClerkAuthState.create(
         publishableKey: widget.publishableKey!,
         persistor: widget.persistor,
         translator: widget.translator,
         loading: widget.loading,
         pollMode: widget.pollMode,
-      ) //
-          .then(_completer.complete)
-          .catchError(_completer.completeError);
+      ).then((authState) {
+        if (mounted) {
+          setState(() => _clerkAuthState = authState);
+        }
+      });
     }
   }
 
   @override
   void dispose() {
-    if (widget.auth == null) {
-      _completer.future.then((auth) => auth.terminate());
-    }
-
     super.dispose();
+    _clerkAuthState?.terminate();
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<ClerkAuthProvider>(
-      initialData: widget.auth,
-      future: _completer.future,
-      builder: (context, snapshot) {
-        if (snapshot.data case ClerkAuthProvider auth) {
-          return ListenableBuilder(
-            listenable: auth,
-            builder: (BuildContext context, Widget? child) {
-              return _ClerkAuthData(
-                auth: auth,
-                child: widget.child,
-              );
-            },
+    if (effectiveAuthState case ClerkAuthState authState) {
+      return ListenableBuilder(
+        listenable: authState,
+        builder: (BuildContext context, Widget? child) {
+          return _ClerkAuthData(
+            authState: authState,
+            child: widget.child,
           );
-        }
-        if (snapshot.hasError) {
-          FlutterError.presentError(
-            FlutterErrorDetails(
-              exception: snapshot.error!,
-              stack: snapshot.stackTrace,
-              library: 'clerk_flutter',
-              context: ErrorDescription('Error initializing ClerkAuth'),
-            ),
-          );
-        }
-        return widget.loading ?? emptyWidget;
-      },
-    );
+        },
+      );
+    }
+
+    return widget.loading ?? emptyWidget;
   }
 }
 
 /// Data class holding the auth object
 class _ClerkAuthData extends InheritedWidget {
   _ClerkAuthData({
-    required this.auth,
+    required this.authState,
     required super.child,
-  })  : client = auth.client,
-        env = auth.env;
+  })  : client = authState.client,
+        env = authState.env;
 
   /// Clerk auth object
-  final ClerkAuthProvider auth;
+  final ClerkAuthState authState;
   final clerk.Client client;
   final clerk.Environment env;
 

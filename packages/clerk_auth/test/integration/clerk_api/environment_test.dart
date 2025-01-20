@@ -7,13 +7,14 @@ import '../../test_helpers.dart';
 void main() {
   late final Api api;
   late final TestEnv env;
-  final httpClient = TestHttpClient();
+  final httpService = TestHttpService();
 
   setUpAll(() async {
     env = TestEnv('.env.test');
     api = Api(
       publishableKey: env.publishableKey,
-      client: httpClient,
+      persistor: Persistor.none,
+      httpService: httpService,
     );
     await setUpLogging(printer: TestLogPrinter(), level: Level.SEVERE);
   });
@@ -21,7 +22,7 @@ void main() {
   group('Environment:', () {
     test('can fetch', () async {
       await runWithLogging(() async {
-        httpClient.expect(
+        httpService.expect(
           'GET /v1/environment',
           200,
           '{}',

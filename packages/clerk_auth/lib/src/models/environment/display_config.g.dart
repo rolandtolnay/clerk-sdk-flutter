@@ -35,8 +35,9 @@ DisplayConfig _$DisplayConfigFromJson(Map<String, dynamic> json) =>
       googleOneTapClientId: json['google_one_tap_client_id'] as String? ?? '',
       helpUrl: json['help_url'] as String? ?? '',
       homeUrl: json['home_url'] as String? ?? '',
-      instanceEnvironmentType:
-          json['instance_environment_type'] as String? ?? '',
+      instanceEnvironmentType: $enumDecodeNullable(
+              _$InstanceTypeEnumMap, json['instance_environment_type']) ??
+          InstanceType.unknown,
       logoImageUrl: json['logo_image_url'] as String? ?? '',
       logoLinkUrl: json['logo_link_url'] as String? ?? '',
       logoUrl: json['logo_url'] as String? ?? '',
@@ -87,7 +88,8 @@ Map<String, dynamic> _$DisplayConfigToJson(DisplayConfig instance) {
   writeNotNull('google_one_tap_client_id', instance.googleOneTapClientId);
   writeNotNull('help_url', instance.helpUrl);
   writeNotNull('home_url', instance.homeUrl);
-  writeNotNull('instance_environment_type', instance.instanceEnvironmentType);
+  val['instance_environment_type'] =
+      _$InstanceTypeEnumMap[instance.instanceEnvironmentType]!;
   writeNotNull('logo_image_url', instance.logoImageUrl);
   writeNotNull('logo_link_url', instance.logoLinkUrl);
   writeNotNull('logo_url', instance.logoUrl);
@@ -101,3 +103,9 @@ Map<String, dynamic> _$DisplayConfigToJson(DisplayConfig instance) {
   writeNotNull('user_profile_url', instance.userProfileUrl);
   return val;
 }
+
+const _$InstanceTypeEnumMap = {
+  InstanceType.unknown: 'unknown',
+  InstanceType.development: 'development',
+  InstanceType.production: 'production',
+};

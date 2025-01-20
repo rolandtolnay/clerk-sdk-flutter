@@ -30,20 +30,13 @@ const outlineInputBorder = OutlineInputBorder(
   borderSide: BorderSide.none,
 );
 
-const insetBoxShadow = [
-  BoxShadow(
-    color: ClerkColors.seashell,
-    blurRadius: 5.0,
-    offset: Offset(1.0, 1.0),
+const inputBoxBorderDecoration = ShapeDecoration(
+  color: ClerkColors.white,
+  shape: RoundedRectangleBorder(
+    side: BorderSide(color: ClerkColors.dawnPink, width: 0.5),
+    borderRadius: borderRadius4,
   ),
-  BoxShadow(
-    color: ClerkColors.seashell,
-    blurRadius: 5.0,
-    offset: Offset(-1.0, -1.0),
-  ),
-];
-
-const insetBoxShadowDecoration = BoxDecoration(boxShadow: insetBoxShadow);
+);
 
 const firstColumnWidth = 215.0;
 const secondColumnWidth = 280.0;
@@ -180,6 +173,7 @@ const endPadding32 = EdgeInsetsDirectional.only(end: 32.0);
 const endPadding48 = EdgeInsetsDirectional.only(end: 48.0);
 
 const borderRadius4 = BorderRadius.all(Radius.circular(4.0));
+const borderRadius6 = BorderRadius.all(Radius.circular(6.0));
 const borderRadius8 = BorderRadius.all(Radius.circular(8.0));
 const borderRadius12 = BorderRadius.all(Radius.circular(12.0));
 const borderRadius16 = BorderRadius.all(Radius.circular(16.0));

@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:clerk_auth/clerk_auth.dart';
 import 'package:http/http.dart';
-import 'package:http_parser/http_parser.dart';
 
 /// Enum detailing [HttpMethod]s used by the Clerk API
 enum HttpMethod {
@@ -34,9 +33,12 @@ enum HttpMethod {
 /// Abstract class defining the interface to call the
 /// Clerk back-end over http
 ///
-abstract class HttpClient {
+abstract class HttpService {
   /// Constructor
-  const HttpClient();
+  const HttpService();
+
+  /// An empty implementation
+  static final none = _NoneHttpService();
 
   /// [send] data to the back end, and receive a [Response]
   ///
@@ -45,25 +47,49 @@ abstract class HttpClient {
     Uri uri, {
     Map<String, String>? headers,
     Map<String, dynamic>? params,
+    String? body,
   });
 
   /// Upload a [File] to the back end, and receive a [Response]
   ///
-  Future<Response> sendFile(
+  Future<Response> sendByteStream(
     HttpMethod method,
     Uri uri,
-    File file,
+    ByteStream byteStream,
+    int length,
     Map<String, String> headers,
   );
 }
 
-/// Default implementation of [HttpClient]
-///
-class DefaultHttpClient implements HttpClient {
-  /// Constructor
-  const DefaultHttpClient();
+class _NoneHttpService implements HttpService {
+  @override
+  Future<Response> send(
+    HttpMethod method,
+    Uri uri, {
+    Map<String, String>? headers,
+    Map<String, dynamic>? params,
+    String? body,
+  }) {
+    return Future.value(Response('', 200));
+  }
 
-  static const _imageExts = ['png', 'webp'];
+  @override
+  Future<Response> sendByteStream(
+    HttpMethod method,
+    Uri uri,
+    ByteStream byteStream,
+    int length,
+    Map<String, String> headers,
+  ) {
+    return Future.value(Response('', 200));
+  }
+}
+
+/// Default implementation of [HttpService]
+///
+class DefaultHttpService implements HttpService {
+  /// Constructor
+  const DefaultHttpService();
 
   @override
   Future<Response> send(
@@ -71,6 +97,7 @@ class DefaultHttpClient implements HttpClient {
     Uri uri, {
     Map<String, String>? headers,
     Map<String, dynamic>? params,
+    String? body,
   }) async {
     final request = Request(method.toString(), uri);
 
@@ -82,39 +109,34 @@ class DefaultHttpClient implements HttpClient {
       request.bodyFields = params.toStringMap();
     }
 
+    if (body case String body) {
+      request.body = body;
+    }
+
     final streamedResponse = await request.send();
     return Response.fromStream(streamedResponse);
   }
 
   @override
-  Future<Response> sendFile(
+  Future<Response> sendByteStream(
     HttpMethod method,
     Uri uri,
-    File file,
+    ByteStream byteStream,
+    int length,
     Map<String, String> headers,
   ) async {
     final request = MultipartRequest(method.toString(), uri);
     request.headers.addAll(headers);
 
-    final multipartFile = await MultipartFile.fromPath(
+    final multipartFile = MultipartFile(
       'file',
-      file.path,
-      contentType: _contentTypeFor(file),
+      byteStream,
+      length,
+      filename: byteStream.hashCode.toString(),
     );
     request.files.add(multipartFile);
 
     final streamedResponse = await request.send();
     return Response.fromStream(streamedResponse);
-  }
-
-  MediaType _contentTypeFor(File file) {
-    return switch (file.path.split('.').last.toLowerCase()) {
-      'jpg' => MediaType('image', 'jpeg'),
-      String ext when _imageExts.contains(ext) => MediaType('image', ext),
-      String ext => throw AuthError(
-          message: 'Unknown media type for upload: ###',
-          substitution: ext,
-        ),
-    };
   }
 }
