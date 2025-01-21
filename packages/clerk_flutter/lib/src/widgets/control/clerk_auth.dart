@@ -84,18 +84,10 @@ class ClerkAuth extends StatefulWidget {
       of(context, listen: false).errorStream;
 }
 
-class _ClerkAuthState extends State<ClerkAuth> with ClerkTelemetryStateMixin {
+class _ClerkAuthState extends State<ClerkAuth> {
   ClerkAuthState? _clerkAuthState;
 
   ClerkAuthState? get effectiveAuthState => widget.authState ?? _clerkAuthState;
-
-  @override
-  Map<String, dynamic> get telemetryPayload {
-    return {
-      'poll_mode': widget.pollMode.toString(),
-      'primary_instance': widget.authState == null,
-    };
-  }
 
   @override
   void initState() {
