@@ -17,6 +17,7 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
     required this.translator,
     super.pollMode,
     Widget? loading,
+    super.sendTelemetryData,
   }) : _loadingOverlay = OverlayEntry(
           builder: (context) => loading ?? defaultLoadingWidget,
         );
@@ -27,6 +28,7 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
     clerk.Persistor? persistor,
     ClerkTranslator translator = const DefaultClerkTranslator(),
     clerk.SessionTokenPollMode pollMode = clerk.SessionTokenPollMode.onDemand,
+    bool sendTelemetryData = true,
     Widget? loading,
   }) async {
     final provider = ClerkAuthState._(
@@ -38,6 +40,7 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
       translator: translator,
       pollMode: pollMode,
       loading: loading,
+      sendTelemetryData: sendTelemetryData,
     );
     await provider.initialize();
     return provider;
