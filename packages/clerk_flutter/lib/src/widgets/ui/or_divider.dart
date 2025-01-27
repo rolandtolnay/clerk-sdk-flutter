@@ -17,7 +17,7 @@ class OrDivider extends StatelessWidget {
         horizontalMargin24,
         Text(
           translator.translate('or'),
-          style: ClerkTextStyle.subtitle.copyWith(fontSize: 12.0),
+          style: context.clerkSubtitle.copyWith(fontSize: 12.0),
         ),
         horizontalMargin24,
         const Expanded(child: Divider(color: ClerkColors.whiteSmoke)),

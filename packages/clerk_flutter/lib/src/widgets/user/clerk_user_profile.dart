@@ -138,7 +138,7 @@ class _ClerkUserProfileState extends State<ClerkUserProfile>
               Text(
                 translator.translate('Profile details'),
                 maxLines: 1,
-                style: ClerkTextStyle.title,
+                style: context.clerkTitle,
               ),
               ClerkUserProfile._paddedDivider,
               Expanded(
@@ -286,7 +286,7 @@ class _RowLabel extends StatelessWidget {
               padding: horizontalPadding4 + verticalPadding2,
               child: Text(
                 label,
-                style: ClerkTextStyle.rowLabel.copyWith(color: color),
+                style: context.clerkRowLabel.copyWith(color: color),
               ),
             ),
           ),
@@ -423,7 +423,7 @@ class _EditableUserDataState extends State<_EditableUserData> {
           child: isEditing
               ? TextFormField(
                   controller: _controller,
-                  style: ClerkTextStyle.inputLabel,
+                  style: context.clerkInputLabel,
                   autofocus: true,
                   decoration: const InputDecoration(
                     isCollapsed: true,
@@ -435,7 +435,7 @@ class _EditableUserDataState extends State<_EditableUserData> {
               : Text(
                   widget.user.name,
                   maxLines: 1,
-                  style: ClerkTextStyle.inputLabel,
+                  style: context.clerkInputLabel,
                 ),
         ),
         horizontalMargin8,

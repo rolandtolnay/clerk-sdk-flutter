@@ -31,7 +31,7 @@ class _FirstChild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SingleChildScrollView(
+    return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -45,7 +45,7 @@ class _FirstChild extends StatelessWidget {
                 'Account',
                 textAlign: TextAlign.center,
                 maxLines: 1,
-                style: ClerkTextStyle.title,
+                style: context.clerkTitle,
               ),
             ),
           ),
@@ -57,12 +57,12 @@ class _FirstChild extends StatelessWidget {
                 'Manage your account info.',
                 textAlign: TextAlign.center,
                 maxLines: 1,
-                style: ClerkTextStyle.subtitle,
+                style: context.clerkSubtitle,
               ),
             ),
           ),
           verticalMargin24,
-          Padding(
+          const Padding(
             padding: horizontalPadding24,
             child: ProfileNavTile(
               icon: ClerkIcon(ClerkAssets.profileIcon),
@@ -70,7 +70,7 @@ class _FirstChild extends StatelessWidget {
               selected: true,
             ),
           ),
-          Padding(
+          const Padding(
             padding: horizontalPadding24,
             child: ProfileNavTile(
               icon: ClerkIcon(ClerkAssets.securityIconLight),
@@ -113,19 +113,19 @@ class _SecondChild extends StatelessWidget {
       ),
     );
     return DefaultTextStyle(
-      style: ClerkTextStyle.subtitleDark.copyWith(height: 1.0),
+      style: context.clerkSubtitleDark.copyWith(height: 1.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           verticalMargin32,
-          const Padding(
+          Padding(
             padding: horizontalPadding32,
             child: Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 'Profile details',
                 maxLines: 1,
-                style: ClerkTextStyle.title,
+                style: context.clerkTitle,
               ),
             ),
           ),

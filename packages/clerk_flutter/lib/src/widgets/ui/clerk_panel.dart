@@ -21,7 +21,7 @@ class ClerkPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTextStyle(
-      style: ClerkTextStyle.subtitleDark.copyWith(height: 1.0),
+      style: context.clerkSubtitleDark.copyWith(height: 1.0),
       child: DecoratedBox(
         decoration: inputBoxBorderDecoration,
         child: Padding(padding: padding, child: child),

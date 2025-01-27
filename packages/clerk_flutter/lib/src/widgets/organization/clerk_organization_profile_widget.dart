@@ -32,7 +32,7 @@ class _FirstChild extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const SingleChildScrollView(
+    return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -46,7 +46,7 @@ class _FirstChild extends StatelessWidget {
                 'Organization',
                 textAlign: TextAlign.center,
                 maxLines: 1,
-                style: ClerkTextStyle.title,
+                style: context.clerkTitle,
               ),
             ),
           ),
@@ -58,12 +58,12 @@ class _FirstChild extends StatelessWidget {
                 'Manage your organization',
                 textAlign: TextAlign.center,
                 maxLines: 1,
-                style: ClerkTextStyle.subtitle,
+                style: context.clerkSubtitle,
               ),
             ),
           ),
           verticalMargin24,
-          Padding(
+          const Padding(
             padding: horizontalPadding24,
             child: ProfileNavTile(
               icon: ClerkIcon(ClerkAssets.generalIconSelected),
@@ -71,7 +71,7 @@ class _FirstChild extends StatelessWidget {
               selected: true,
             ),
           ),
-          Padding(
+          const Padding(
             padding: horizontalPadding24,
             child: ProfileNavTile(
               icon: ClerkIcon(ClerkAssets.membersIcon),
@@ -103,8 +103,8 @@ class _SecondChild extends StatelessWidget {
       ],
     );
     return DefaultTextStyle(
-      style: ClerkTextStyle.subtitleDark.copyWith(height: 1.0),
-      child: const Column(
+      style: context.clerkSubtitleDark.copyWith(height: 1.0),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           verticalMargin32,
@@ -115,12 +115,12 @@ class _SecondChild extends StatelessWidget {
               child: Text(
                 'Organization profile',
                 maxLines: 1,
-                style: ClerkTextStyle.title,
+                style: context.clerkTitle,
               ),
             ),
           ),
           paddedDivider,
-          Padding(
+          const Padding(
             padding: horizontalPadding32,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -153,7 +153,7 @@ class _SecondChild extends StatelessWidget {
             ),
           ),
           paddedDivider,
-          Padding(
+          const Padding(
             padding: horizontalPadding32,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -187,7 +187,7 @@ class _SecondChild extends StatelessWidget {
             ),
           ),
           paddedDivider,
-          Padding(
+          const Padding(
             padding: horizontalPadding32,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,

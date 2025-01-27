@@ -50,7 +50,7 @@ class ClerkPhoneNumberFormField extends StatelessWidget {
                   translator.translate(label),
                   textAlign: TextAlign.start,
                   maxLines: 2,
-                  style: ClerkTextStyle.inputLabel,
+                  style: context.clerkInputLabel,
                 ),
               ),
             spacer,
@@ -59,7 +59,7 @@ class ClerkPhoneNumberFormField extends StatelessWidget {
                 translator.translate('Optional'),
                 textAlign: TextAlign.end,
                 maxLines: 1,
-                style: ClerkTextStyle.inputLabel.copyWith(
+                style: context.clerkInputLabel.copyWith(
                   color: ClerkColors.stormGrey,
                   fontSize: 12.0,
                 ),
@@ -117,7 +117,7 @@ class _PhoneInputState extends State<_PhoneInput> {
         }
       },
       onSubmitted: widget.onSubmit,
-      style: ClerkTextStyle.inputLabel.copyWith(
+      style: context.clerkInputLabel.copyWith(
         color: _isValid ? ClerkColors.charcoalGrey : ClerkColors.incarnadine,
       ),
       decoration: const InputDecoration(

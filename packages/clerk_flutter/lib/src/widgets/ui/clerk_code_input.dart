@@ -36,8 +36,8 @@ class ClerkCodeInput extends StatelessWidget {
               textAlign: TextAlign.start,
               maxLines: 2,
               style: subtitle is String
-                  ? ClerkTextStyle.title
-                  : ClerkTextStyle.subtitleDark,
+                  ? context.clerkTitle
+                  : context.clerkSubtitleDark,
             ),
           ),
         if (subtitle case String subtitle)
@@ -45,7 +45,7 @@ class ClerkCodeInput extends StatelessWidget {
             subtitle,
             textAlign: TextAlign.start,
             maxLines: 2,
-            style: ClerkTextStyle.subtitleDark,
+            style: context.clerkSubtitleDark,
           ),
         verticalMargin4,
         MultiDigitCodeInput(onSubmit: onSubmit, isSmall: isSmall),

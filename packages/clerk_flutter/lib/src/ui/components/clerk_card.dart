@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 
 import '../../../clerk_flutter.dart';
-import 'shadcn/clerk_shadcn_card.dart';
 
 /// A Clerk themed card component that adapts to the current UI configuration.
 class ClerkCard extends StatelessWidget {

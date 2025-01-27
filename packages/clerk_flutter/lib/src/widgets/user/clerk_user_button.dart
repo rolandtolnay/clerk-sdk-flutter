@@ -161,7 +161,7 @@ class _ClerkUserButtonState extends State<ClerkUserButton>
                           horizontalMargin32,
                           Text(
                             action.label,
-                            style: ClerkTextStyle.buttonTitle.copyWith(
+                            style: context.clerkButtonTitle.copyWith(
                               color: ClerkColors.almostBlack,
                             ),
                           ),
@@ -188,7 +188,7 @@ class _ClerkUserButtonState extends State<ClerkUserButton>
                       horizontalMargin8,
                       Text(
                         translator.translate('Sign out of all accounts'),
-                        style: ClerkTextStyle.buttonTitle,
+                        style: context.clerkButtonTitle,
                       )
                     ],
                   ),
@@ -249,12 +249,12 @@ class _SessionRow extends StatelessWidget {
                         if (showName)
                           Text(
                             user.name,
-                            style: ClerkTextStyle.buttonTitle.copyWith(
+                            style: context.clerkButtonTitle.copyWith(
                               color: ClerkColors.almostBlack,
                             ),
                           ),
                         if (user.email is String)
-                          Text(user.email!, style: ClerkTextStyle.buttonTitle),
+                          Text(user.email!, style: context.clerkButtonTitle),
                       ],
                     )
                   ],
@@ -283,7 +283,7 @@ class _SessionRow extends StatelessWidget {
                                 horizontalMargin8,
                                 Text(
                                   action.label,
-                                  style: ClerkTextStyle.buttonSubtitle.copyWith(
+                                  style: context.clerkButtonSubtitle.copyWith(
                                     fontSize: 8,
                                     color: ClerkColors.charcoalGrey,
                                   ),

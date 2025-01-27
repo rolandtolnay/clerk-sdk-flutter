@@ -71,11 +71,11 @@ class ClerkOrganizationSwitcherWidget extends StatelessWidget {
                     package: 'clerk_flutter',
                   ),
                   horizontalMargin8,
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Clerk Sample Apps',
                       maxLines: 1,
-                      style: ClerkTextStyle.subtitle,
+                      style: context.clerkSubtitle,
                     ),
                   ),
                   horizontalMargin8,
@@ -205,13 +205,13 @@ class _OrganizationTileState extends State<_OrganizationTile> {
                   children: [
                     Text(
                       widget.organization.name,
-                      style: ClerkTextStyle.subtitleDark,
+                      style: context.clerkSubtitleDark,
                       maxLines: 1,
                     ),
                     if (widget.organization.member)
                       Text(
                         'Member',
-                        style: ClerkTextStyle.subtitle,
+                        style: context.clerkSubtitle,
                         maxLines: 1,
                       ),
                   ],

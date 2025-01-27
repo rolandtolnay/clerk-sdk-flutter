@@ -25,7 +25,7 @@ class ClerkAvatar extends StatelessWidget {
   /// an override file location
   final File? file;
 
-  Widget _child() {
+  Widget _child(BuildContext context) {
     if (file case File file) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(diameter / 2),
@@ -50,7 +50,7 @@ class ClerkAvatar extends StatelessWidget {
       );
     }
 
-    return Text(user.name.initials, style: ClerkTextStyle.subtitleDark);
+    return Text(user.name.initials, style: context.clerkSubtitleDark);
   }
 
   @override
@@ -58,7 +58,7 @@ class ClerkAvatar extends StatelessWidget {
     return CircleAvatar(
       radius: diameter / 2,
       backgroundColor: ClerkColors.mountainMist,
-      child: _child(),
+      child: _child(context),
     );
   }
 }

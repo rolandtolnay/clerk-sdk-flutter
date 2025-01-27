@@ -69,7 +69,7 @@ class StrategyButton extends StatelessWidget {
           child: Text(
             translator.translate(descriptor.title),
             maxLines: 1,
-            style: ClerkTextStyle.buttonTitle,
+            style: context.clerkButtonTitle,
           ),
         )
       ],

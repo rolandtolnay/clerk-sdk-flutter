@@ -37,7 +37,7 @@ class SocialConnectionButton extends StatelessWidget {
                   : Text(
                       connection.name.initials,
                       textAlign: TextAlign.center,
-                      style: ClerkTextStyle.title.copyWith(
+                      style: context.clerkTitle.copyWith(
                         height: .1,
                         fontSize: 16,
                       ),
@@ -55,7 +55,7 @@ class SocialConnectionButton extends StatelessWidget {
               Text(
                 connection.name,
                 maxLines: 1,
-                style: ClerkTextStyle.buttonTitle,
+                style: context.clerkButtonTitle,
               ),
             ],
           );

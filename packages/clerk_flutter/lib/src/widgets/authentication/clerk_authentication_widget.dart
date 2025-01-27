@@ -1,6 +1,5 @@
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:clerk_flutter/src/assets.dart';
-import 'package:clerk_flutter/src/ui/components/clerk_card.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -132,7 +131,7 @@ class _TopPortion extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
-            style: ClerkTextStyle.title,
+            style: context.clerkTitle,
           ),
         ),
         Padding(
@@ -145,7 +144,7 @@ class _TopPortion extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
             maxLines: 2,
-            style: ClerkTextStyle.subtitle,
+            style: context.clerkSubtitle,
           ),
         ),
       ],
@@ -177,14 +176,14 @@ class _BottomPortion extends StatelessWidget {
                   text: state.isSigningIn
                       ? translator.translate("Don't have an account?")
                       : translator.translate('Already have an account?'),
-                  style: ClerkTextStyle.subtitle,
+                  style: context.clerkSubtitle,
                 ),
                 const WidgetSpan(child: SizedBox(width: 6)),
                 TextSpan(
                   text: state.isSigningIn
                       ? translator.translate('Sign up')
                       : translator.translate('Sign in'),
-                  style: ClerkTextStyle.subtitle
+                  style: context.clerkSubtitle
                       .copyWith(color: ClerkColors.darkJungleGreen),
                   recognizer: TapGestureRecognizer()..onTap = onChange,
                 ),

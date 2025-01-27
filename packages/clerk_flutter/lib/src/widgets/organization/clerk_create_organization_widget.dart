@@ -31,10 +31,9 @@ class _TopPortion extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Text('Create Organization',
-              style: ClerkTextStyle.title, maxLines: 1),
+          Text('Create Organization', style: context.clerkTitle, maxLines: 1),
           verticalMargin32,
-          const Text('Logo', style: ClerkTextStyle.subtitle, maxLines: 1),
+          Text('Logo', style: context.clerkSubtitle, maxLines: 1),
           verticalMargin10,
           Row(
             children: [
@@ -45,11 +44,11 @@ class _TopPortion extends StatelessWidget {
                 package: 'clerk_flutter',
               ),
               horizontalMargin16,
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Align(
+                    const Align(
                       alignment: Alignment.centerLeft,
                       child: SizedBox(
                         width: 70.0,
@@ -67,7 +66,7 @@ class _TopPortion extends StatelessWidget {
                     Text(
                       'Recommend size 1:1, up to 5MB.',
                       maxLines: 2,
-                      style: ClerkTextStyle.subtitle,
+                      style: context.clerkSubtitle,
                     ),
                   ],
                 ),

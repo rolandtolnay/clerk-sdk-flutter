@@ -103,7 +103,7 @@ class _ClerkSignInPanelState extends State<ClerkSignInPanel>
               substitution: _identifier,
             ),
             maxLines: 2,
-            style: ClerkTextStyle.inputLabel,
+            style: context.clerkInputLabel,
           ),
         ),
         Closeable(

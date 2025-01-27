@@ -45,7 +45,7 @@ class ClerkErrorListener extends StatefulWidget {
             error.message,
             substitution: error.substitution,
           ),
-          style: ClerkTextStyle.subtitle.copyWith(
+          style: context.clerkSubtitle.copyWith(
             color: ClerkColors.white,
           ),
         ),
