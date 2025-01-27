@@ -17,13 +17,14 @@ dependencies:
     sdk: flutter
   clerk_auth:
     path: ../clerk_auth
-  collection: ^1.17.1
-  email_validator: ^3.0.0
-  flutter_svg: ^2.0.10+1
-  image_picker: ^1.0.7
-  path_provider: ^2.1.2
-  phone_input: ^1.0.0
-  webview_flutter: ^4.5.0
+  collection: 1.19.0
+  email_validator: 3.0.0
+  flutter_svg: 2.0.17
+  image_picker: 1.0.7
+  path_provider: 2.1.2
+  phone_input: 1.0.0
+  webview_flutter: 4.5.0
+  shadcn_ui: 0.18.3
 
 dev_dependencies:
   flutter_lints: ^3.0.1
