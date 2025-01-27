@@ -84,7 +84,7 @@ class _ClerkUserProfileState extends State<ClerkUserProfile>
     final submitted = await ClerkInputDialog.show(
       context,
       child: switch (type) {
-        clerk.IdentifierType.emailAddress => ClerkTextFormField(
+        clerk.IdentifierType.emailAddress => ClerkInput(
             label: translator.translate(title),
             autofocus: true,
             onChanged: (text) => identifier = text,

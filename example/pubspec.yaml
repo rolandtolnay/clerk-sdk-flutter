@@ -19,6 +19,8 @@ dependencies:
   clerk_auth:
     path: ../packages/clerk_auth
 
+  shadcn_ui: 0.18.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

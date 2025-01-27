@@ -2,6 +2,7 @@
 library;
 
 export 'src/clerk_auth_state.dart';
+export 'src/ui/ui.dart';
 export 'src/utils/clerk_telemetry.dart';
 export 'src/utils/clerk_translator.dart';
 export 'src/widgets/authentication/clerk_authentication_widget.dart';

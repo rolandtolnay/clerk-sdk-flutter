@@ -80,7 +80,7 @@ class _ClerkSignInPanelState extends State<ClerkSignInPanel>
       children: [
         Padding(
           padding: bottomPadding8,
-          child: ClerkTextFormField(
+          child: ClerkInput(
             key: const Key('identifier'),
             label: translator.alternatives(identifiers.toList()).capitalized,
             onChanged: (text) {
@@ -99,7 +99,7 @@ class _ClerkSignInPanelState extends State<ClerkSignInPanel>
           closed: _strategy != clerk.Strategy.emailLink,
           child: Text(
             translator.translate(
-              'Click on the link that‘s been sent to ### and then check back here',
+              "Click on the link that's been sent to ### and then check back here",
               substitution: _identifier,
             ),
             maxLines: 2,
@@ -133,7 +133,7 @@ class _ClerkSignInPanelState extends State<ClerkSignInPanel>
               if (env.hasPasswordStrategy)
                 Padding(
                   padding: verticalPadding8,
-                  child: ClerkTextFormField(
+                  child: ClerkInput(
                     label: translator.translate('Password'),
                     obscureText: true,
                     onChanged: (password) => _password = password,
@@ -162,9 +162,7 @@ class _ClerkSignInPanelState extends State<ClerkSignInPanel>
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Center(
-                          child: Text(translator.translate('Continue')),
-                        ),
+                        Center(child: Text(translator.translate('Continue'))),
                         horizontalMargin4,
                         const Icon(Icons.arrow_right_sharp),
                       ],

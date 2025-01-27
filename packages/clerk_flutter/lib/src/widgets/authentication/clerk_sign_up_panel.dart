@@ -123,7 +123,7 @@ class _ClerkSignUpPanelState extends State<ClerkSignUpPanel>
                           optional: attribute.isOptional,
                           onChanged: (value) => _values[attribute.attr] = value,
                         )
-                      : ClerkTextFormField(
+                      : ClerkInput(
                           initial: _values[attribute.attr],
                           label: attribute.title,
                           optional: attribute.isOptional,

@@ -1,12 +1,7 @@
+import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:clerk_flutter/src/assets.dart';
-import 'package:clerk_flutter/src/widgets/common.dart';
-import 'package:clerk_flutter/src/widgets/ui/clerk_material_button.dart';
-import 'package:clerk_flutter/src/widgets/ui/clerk_text_form_field.dart';
-import 'package:clerk_flutter/src/widgets/ui/clerk_vertical_card.dart';
-import 'package:clerk_flutter/src/widgets/ui/style/colors.dart';
-import 'package:clerk_flutter/src/widgets/ui/style/text_style.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 ///The [ClerkCreateOrganizationWidget] component is used to render an organization creation
 /// UI that allows users to create brand new organizations within your application.
@@ -80,9 +75,9 @@ class _TopPortion extends StatelessWidget {
             ],
           ),
           verticalMargin28,
-          const ClerkTextFormField(label: 'Name'),
+          const ClerkInput(label: 'Name'),
           verticalMargin28,
-          const ClerkTextFormField(label: 'Slug URL'),
+          const ClerkInput(label: 'Slug URL'),
           verticalMargin28,
           const Align(
             alignment: Alignment.centerRight,

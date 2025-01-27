@@ -1,5 +1,6 @@
 import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:clerk_flutter/src/assets.dart';
+import 'package:clerk_flutter/src/ui/components/clerk_card.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,7 +26,14 @@ enum _AuthState {
 @immutable
 class ClerkAuthenticationWidget extends StatefulWidget {
   /// Constructs a new [ClerkAuthenticationWidget].
-  const ClerkAuthenticationWidget({super.key});
+  const ClerkAuthenticationWidget({
+    super.key,
+    this.uiConfig = const ClerkMaterialUIConfig(),
+  });
+
+  /// The UI configuration to use for styling components.
+  /// Defaults to [ClerkMaterialUIConfig] for backward compatibility.
+  final ClerkUIConfig uiConfig;
 
   @override
   State<ClerkAuthenticationWidget> createState() =>
@@ -40,45 +48,48 @@ class _ClerkAuthenticationWidgetState extends State<ClerkAuthenticationWidget>
 
   @override
   Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(minHeight: 530.0),
-      child: ClerkVerticalCard(
-        topPortion: _TopPortion(state: _state),
-        middlePortion: ClerkAuthBuilder(
-          builder: (context, auth) {
-            final env = auth.env;
-            return Padding(
-              padding: horizontalPadding32,
-              child: Column(
-                children: [
-                  if (env.hasOauthStrategies) //
-                    Closeable(
-                      closed: auth.isSigningIn || auth.isSigningUp,
-                      child: const ClerkSSOPanel(),
-                    ),
-                  if (env.hasIdentificationStrategies) ...[
+    return ClerkUIProvider(
+      config: widget.uiConfig,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: 530.0),
+        child: ClerkCard(
+          topPortion: _TopPortion(state: _state),
+          middlePortion: ClerkAuthBuilder(
+            builder: (context, auth) {
+              final env = auth.env;
+              return Padding(
+                padding: horizontalPadding32,
+                child: Column(
+                  children: [
                     if (env.hasOauthStrategies) //
-                      const Padding(
-                        padding: verticalPadding24,
-                        child: OrDivider(),
+                      Closeable(
+                        closed: auth.isSigningIn || auth.isSigningUp,
+                        child: const ClerkSSOPanel(),
                       ),
-                    Closeable(
-                      closed: _state.isSigningIn == false,
-                      child: const ClerkSignInPanel(),
-                    ),
-                    Closeable(
-                      closed: _state.isSigningUp == false,
-                      child: const ClerkSignUpPanel(),
-                    ),
+                    if (env.hasIdentificationStrategies) ...[
+                      if (env.hasOauthStrategies) //
+                        const Padding(
+                          padding: verticalPadding24,
+                          child: OrDivider(),
+                        ),
+                      Closeable(
+                        closed: _state.isSigningIn == false,
+                        child: const ClerkSignInPanel(),
+                      ),
+                      Closeable(
+                        closed: _state.isSigningUp == false,
+                        child: const ClerkSignUpPanel(),
+                      ),
+                    ],
                   ],
-                ],
-              ),
-            );
-          },
-        ),
-        bottomPortion: _BottomPortion(
-          state: _state,
-          onChange: _toggle,
+                ),
+              );
+            },
+          ),
+          bottomPortion: _BottomPortion(
+            state: _state,
+            onChange: _toggle,
+          ),
         ),
       ),
     );
@@ -164,7 +175,7 @@ class _BottomPortion extends StatelessWidget {
               children: [
                 TextSpan(
                   text: state.isSigningIn
-                      ? translator.translate('Don’t have an account?')
+                      ? translator.translate("Don't have an account?")
                       : translator.translate('Already have an account?'),
                   style: ClerkTextStyle.subtitle,
                 ),

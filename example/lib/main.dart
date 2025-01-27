@@ -5,6 +5,7 @@ import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:example/persistor/file_persistor.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import 'persistor/memory_persistor.dart';
 
@@ -50,7 +51,8 @@ class _ExampleAppState extends State<ExampleApp> {
     return ClerkAuth(
       publishableKey: widget.publishableKey,
       persistor: persistor,
-      child: MaterialApp(
+      sendTelemetryData: false,
+      child: ShadApp(
         debugShowCheckedModeBanner: false,
         builder: (BuildContext context, Widget? child) {
           return ClerkErrorListener(child: child!);
@@ -79,7 +81,9 @@ class _ExampleAppState extends State<ExampleApp> {
                     ],
                   ),
                   signedOutBuilder: (context, auth) {
-                    return const ClerkAuthenticationWidget();
+                    return const ClerkAuthenticationWidget(
+                      uiConfig: ClerkShadcnUIConfig(),
+                    );
                   },
                 ),
               ),

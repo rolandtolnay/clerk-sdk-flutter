@@ -15,6 +15,7 @@ class ClerkAuth extends StatefulWidget {
     this.translator = const DefaultClerkTranslator(),
     this.persistor,
     this.loading,
+    this.sendTelemetryData = true,
     required this.child,
   }) : assert(
           (publishableKey is String) != (authState is ClerkAuthState),
@@ -39,6 +40,9 @@ class ClerkAuth extends StatefulWidget {
 
   /// Loading widget
   final Widget? loading;
+
+  /// Whether to send telemetry data
+  final bool sendTelemetryData;
 
   /// child widget tree
   final Widget child;
@@ -99,6 +103,7 @@ class _ClerkAuthState extends State<ClerkAuth> {
         translator: widget.translator,
         loading: widget.loading,
         pollMode: widget.pollMode,
+        sendTelemetryData: widget.sendTelemetryData,
       ).then((authState) {
         if (mounted) {
           setState(() => _clerkAuthState = authState);
