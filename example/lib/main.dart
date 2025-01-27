@@ -9,8 +9,7 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 
 import 'persistor/memory_persistor.dart';
 
-// TODO: Add your publishable key here
-const key = '';
+const key = String.fromEnvironment('apiKey');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
