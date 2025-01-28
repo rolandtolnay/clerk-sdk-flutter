@@ -8,8 +8,7 @@ import 'package:path_provider/path_provider.dart';
 
 import 'persistor/memory_persistor.dart';
 
-// TODO: Add your publishable key here
-const key = '';
+const key = String.fromEnvironment('CLERK_PUBLISHABLE_KEY');
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
