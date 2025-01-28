@@ -2,10 +2,18 @@
 ///
 class AuthError extends Error {
   /// Construct an [AuthError]
-  AuthError({this.code, required this.message, this.substitution});
+  AuthError({
+    required this.message,
+    this.statusCode,
+    this.codeList = const [],
+    this.substitution,
+  });
 
-  /// An error [code], likely to be an http status code
-  final int? code;
+  /// HTTP status code of the response, if exists
+  final int? statusCode;
+
+  /// List of backend error codes
+  final Iterable<String> codeList;
 
   /// The associated [message]
   final String message;

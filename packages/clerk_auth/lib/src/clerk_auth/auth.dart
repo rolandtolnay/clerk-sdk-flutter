@@ -138,7 +138,11 @@ class Auth {
     if (resp.client case Client client when resp.isOkay) {
       this.client = client;
     } else {
-      throw AuthError(code: resp.status, message: resp.errorMessage);
+      throw AuthError(
+        statusCode: resp.status,
+        codeList: resp.errors?.map((e) => e.code).whereType<String>() ?? [],
+        message: resp.errorMessage,
+      );
     }
     return resp;
   }
