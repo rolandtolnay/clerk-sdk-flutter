@@ -27,7 +27,7 @@ class _ClerkSignInPanelState extends State<ClerkSignInPanel>
 
   bool get _hasIdent => _identifier.isNotEmpty;
 
-  void _onError(clerk.AuthError _) {
+  void _onError(clerk.ClerkAuthException _) {
     setState(() {
       _code = '';
       _strategy = clerk.Strategy.password;

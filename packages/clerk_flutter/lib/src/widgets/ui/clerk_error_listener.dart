@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 /// Clerk Error Handler
 typedef ClerkErrorHandler = FutureOr<void> Function(
-    BuildContext context, AuthError error);
+    BuildContext context, ClerkAuthException error);
 
 /// Widget to display error messages as errors are received
 /// from the [ClerkAuthState].
@@ -30,7 +30,7 @@ class ClerkErrorListener extends StatefulWidget {
 
   /// Default Error Handler
   static Future<void> defaultErrorHandler(
-      BuildContext context, AuthError error) async {
+      BuildContext context, ClerkAuthException error) async {
     final translator = ClerkAuth.translatorOf(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

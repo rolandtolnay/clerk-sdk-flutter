@@ -1,8 +1,8 @@
 /// Container for errors encountered during Clerk auth(entication|orization)
 ///
-class AuthError extends Error {
-  /// Construct an [AuthError]
-  AuthError({
+class ClerkAuthException implements Exception {
+  /// Construct an [ClerkAuthException]
+  ClerkAuthException({
     required this.message,
     this.statusCode,
     this.codeList = const [],

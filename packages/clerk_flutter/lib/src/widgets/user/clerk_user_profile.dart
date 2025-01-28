@@ -31,7 +31,7 @@ class _ClerkUserProfileState extends State<ClerkUserProfile>
         case clerk.IdentifierType.phoneNumber:
           return PhoneNumber.parse(identifier).isValid();
         default:
-          throw clerk.AuthError(
+          throw clerk.ClerkAuthException(
             message: "Type '###' invalid",
             substitution: type.name,
           );
@@ -96,7 +96,7 @@ class _ClerkUserProfileState extends State<ClerkUserProfile>
             onChanged: (text) => identifier = text,
             onSubmit: (_) => Navigator.of(context).pop(true),
           ),
-        _ => throw clerk.AuthError(
+        _ => throw clerk.ClerkAuthException(
             message: "Type '###' invalid",
             substitution: type.name,
           ),
@@ -112,7 +112,7 @@ class _ClerkUserProfileState extends State<ClerkUserProfile>
           await _verifyIdentifyingData(context, authState, identifier);
         }
       } else {
-        throw clerk.AuthError(
+        throw clerk.ClerkAuthException(
           message: "$title '###' is invalid",
           substitution: identifier,
         );

@@ -196,7 +196,7 @@ class Strategy {
     return switch (field) {
       Field.phoneNumber => Strategy.phoneCode,
       Field.emailAddress => Strategy.emailCode,
-      _ => throw AuthError(
+      _ => throw ClerkAuthException(
           message: 'No way to verify ###',
           substitution: field.name,
         ),

@@ -49,10 +49,10 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
   /// The [ClerkTranslator] for auth UI
   final ClerkTranslator translator;
 
-  /// The [clerk.AuthError] stream
+  /// The [clerk.ClerkAuthException] stream
   late final errorStream = _errors.stream;
 
-  final _errors = StreamController<clerk.AuthError>.broadcast();
+  final _errors = StreamController<clerk.ClerkAuthException>.broadcast();
   final OverlayEntry _loadingOverlay;
 
   static const _kRotatingTokenNonce = 'rotating_token_nonce';
@@ -72,7 +72,7 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
   Future<void> sso(
     BuildContext context,
     clerk.Strategy strategy, {
-    void Function(clerk.AuthError)? onError,
+    void Function(clerk.ClerkAuthException)? onError,
   }) async {
     final authState = ClerkAuth.of(context, listen: false);
     final client = await call(
@@ -118,7 +118,7 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
   Future<T?> call<T>(
     BuildContext context,
     Future<T> Function() fn, {
-    void Function(clerk.AuthError)? onError,
+    void Function(clerk.ClerkAuthException)? onError,
   }) async {
     T? result;
     try {
@@ -126,7 +126,7 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
         Overlay.of(context).insert(_loadingOverlay);
       }
       result = await fn();
-    } on clerk.AuthError catch (error) {
+    } on clerk.ClerkAuthException catch (error) {
       _errors.add(error);
       onError?.call(error);
     } finally {
@@ -188,9 +188,9 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
     return null;
   }
 
-  /// Add an [clerk.AuthError] for [message] to the [errorStream]
+  /// Add an [clerk.ClerkAuthException] for [message] to the [errorStream]
   void addError(String message) =>
-      _errors.add(clerk.AuthError(message: message));
+      _errors.add(clerk.ClerkAuthException(message: message));
 }
 
 class _SsoWebViewOverlay extends StatefulWidget {

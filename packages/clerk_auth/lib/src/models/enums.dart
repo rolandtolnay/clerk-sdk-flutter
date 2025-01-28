@@ -141,7 +141,7 @@ enum Stage {
     return switch (status) {
       Status.needsFirstFactor => first,
       Status.needsSecondFactor => second,
-      _ => throw AuthError(
+      _ => throw ClerkAuthException(
           message: 'No Stage for ###',
           substitution: status.toString(),
         ),

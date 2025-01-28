@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:clerk_auth/clerk_auth.dart';
 
-export 'auth_error.dart';
+export 'clerk_auth_exception.dart';
 export 'http_service.dart';
 export 'persistor.dart';
 
@@ -138,7 +138,7 @@ class Auth {
     if (resp.client case Client client when resp.isOkay) {
       this.client = client;
     } else {
-      throw AuthError(
+      throw ClerkAuthException(
         statusCode: resp.status,
         codeList: resp.errors?.map((e) => e.code).whereType<String>() ?? [],
         message: resp.errorMessage,
@@ -297,7 +297,8 @@ class Auth {
     String? signature,
   }) async {
     if (password != passwordConfirmation) {
-      throw AuthError(message: "Password and password confirmation must match");
+      throw ClerkAuthException(
+          message: "Password and password confirmation must match");
     }
 
     if (client.signUp == null) {
@@ -446,7 +447,7 @@ class Auth {
 
       final expiry = client.signIn?.firstFactorVerification?.expireAt;
       if (expiry?.isAfter(DateTime.timestamp()) != true) {
-        throw AuthError(
+        throw ClerkAuthException(
           message: 'Awaited user action not completed in required timeframe',
         );
       }
