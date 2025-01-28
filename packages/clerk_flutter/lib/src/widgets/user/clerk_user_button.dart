@@ -291,7 +291,6 @@ class _SessionRow extends StatelessWidget {
                               ],
                             ),
                             style: ClerkButtonStyle.light,
-                            height: 16,
                           ),
                         ),
                       ),

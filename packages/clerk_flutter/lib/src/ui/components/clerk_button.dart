@@ -9,9 +9,8 @@ class ClerkButton extends StatelessWidget {
     super.key,
     required this.label,
     this.onPressed,
-    this.height = 32.0,
     this.square = false,
-    this.style = ClerkButtonStyle.light,
+    this.style = ClerkButtonStyle.dark,
   });
 
   /// The label to display on the button
@@ -19,9 +18,6 @@ class ClerkButton extends StatelessWidget {
 
   /// Called when the button is tapped
   final VoidCallback? onPressed;
-
-  /// The height of the button
-  final double height;
 
   /// Whether the button should be square (width = height)
   final bool square;
@@ -36,14 +32,12 @@ class ClerkButton extends StatelessWidget {
       ClerkMaterialUIConfig() => ClerkMaterialButton(
           label: label,
           onPressed: onPressed,
-          height: height,
           square: square,
           style: style.materialStyle,
         ),
       ClerkShadcnUIConfig() => ClerkShadcnButton(
           label: label,
           onPressed: onPressed,
-          height: height,
           square: square,
           style: style,
         ),
@@ -59,6 +53,10 @@ enum ClerkButtonStyle {
   /// Dark style button
   dark;
 
+  /// Returns the corresponding [ClerkMaterialButtonStyle] for this button style.
+  ///
+  /// Maps [ClerkButtonStyle.light] to [ClerkMaterialButtonStyle.light] and
+  /// [ClerkButtonStyle.dark] to [ClerkMaterialButtonStyle.dark].
   ClerkMaterialButtonStyle get materialStyle => switch (this) {
         ClerkButtonStyle.light => ClerkMaterialButtonStyle.light,
         ClerkButtonStyle.dark => ClerkMaterialButtonStyle.dark,

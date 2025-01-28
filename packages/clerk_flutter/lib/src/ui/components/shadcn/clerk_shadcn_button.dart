@@ -36,12 +36,17 @@ class ClerkShadcnButton extends StatelessWidget {
       ClerkButtonStyle.light => ShadButton.secondary(
           onPressed: onPressed,
           height: height,
-          child: label,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: label,
+          ),
         ),
       ClerkButtonStyle.dark => ShadButton(
           onPressed: onPressed,
-          height: height,
-          child: label,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+            child: label,
+          ),
         ),
     };
   }

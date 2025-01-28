@@ -51,7 +51,7 @@ class _ExampleAppState extends State<ExampleApp> {
       publishableKey: widget.publishableKey,
       persistor: persistor,
       sendTelemetryData: false,
-      child: ShadApp(
+      child: ShadApp.material(
         debugShowCheckedModeBanner: false,
         builder: (BuildContext context, Widget? child) {
           return ClerkErrorListener(child: child!);

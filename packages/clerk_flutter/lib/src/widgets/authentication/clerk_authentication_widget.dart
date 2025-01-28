@@ -2,7 +2,7 @@ import 'package:clerk_flutter/clerk_flutter.dart';
 import 'package:clerk_flutter/src/assets.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 enum _AuthState {
   signingIn,
@@ -47,6 +47,19 @@ class _ClerkAuthenticationWidgetState extends State<ClerkAuthenticationWidget>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.uiConfig is ClerkShadcnUIConfig) {
+      assert(
+        context.findAncestorWidgetOfExactType<ShadApp>() != null,
+        'When using ClerkShadcnUIConfig, you must wrap your app with ShadApp widget, instead of MaterialApp.\n'
+        'For example:\n\n'
+        'ShadApp.material(\n'
+        '  child: ClerkAuthenticationWidget(\n'
+        '    uiConfig: ClerkShadcnUIConfig(),\n'
+        '  ),\n'
+        ')',
+      );
+    }
+
     return ClerkUIProvider(
       config: widget.uiConfig,
       child: ConstrainedBox(

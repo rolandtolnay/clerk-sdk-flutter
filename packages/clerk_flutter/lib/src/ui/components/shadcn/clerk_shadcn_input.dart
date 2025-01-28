@@ -107,6 +107,7 @@ class _ShadcnInputFieldState extends State<_ShadcnInputField> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   widget.label!,

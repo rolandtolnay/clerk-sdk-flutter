@@ -174,11 +174,9 @@ class _ClerkSignInPanelState extends State<ClerkSignInPanel>
                   ),
                 ),
               ],
-              verticalMargin8,
             ],
           ),
         ),
-        verticalMargin32,
       ],
     );
   }
