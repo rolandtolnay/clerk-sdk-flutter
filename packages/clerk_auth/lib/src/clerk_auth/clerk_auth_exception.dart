@@ -28,4 +28,10 @@ class ClerkAuthException implements Exception {
     }
     return message;
   }
+
+  /// Returns a debug-friendly string representation of the exception
+  /// including the message, error codes, status code and any substitution value
+  String get debugDescription {
+    return 'ClerkAuthException(message: $message, codeList: $codeList, statusCode: $statusCode, substitution: $substitution)';
+  }
 }

@@ -278,6 +278,29 @@ class Auth {
     return client;
   }
 
+  /// Resends a verification code for the current sign in attempt
+  ///
+  /// Takes a required [strategy] parameter which must be a code-based strategy
+  /// (e.g. [Strategy.emailCode] or [Strategy.phoneCode]).
+  ///
+  /// If there is an active sign in attempt that requires code verification,
+  /// this will trigger sending a new code via the specified strategy.
+  ///
+  /// Returns the updated [Client] object after requesting the new code.
+  Future<Client> resendFactorCode({
+    required Strategy strategy,
+  }) async {
+    if (client.signIn case SignIn signIn when strategy.requiresCode == true) {
+      final stage = Stage.forStatus(signIn.status);
+      await _api
+          .prepareSignIn(signIn, stage: stage, strategy: strategy)
+          .then(_housekeeping);
+    }
+
+    update();
+    return client;
+  }
+
   /// Progressively attempt sign up
   ///
   /// Can be repeatedly called with updated parameters
