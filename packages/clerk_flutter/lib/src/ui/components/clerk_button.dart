@@ -38,7 +38,7 @@ class ClerkButton extends StatelessWidget {
           onPressed: onPressed,
           height: height,
           square: square,
-          style: _toMaterialStyle(style),
+          style: style.materialStyle,
         ),
       ClerkShadcnUIConfig() => ClerkShadcnButton(
           label: label,
@@ -49,15 +49,6 @@ class ClerkButton extends StatelessWidget {
         ),
     };
   }
-
-  ClerkMaterialButtonStyle _toMaterialStyle(ClerkButtonStyle style) {
-    return switch (style) {
-      ClerkButtonStyle.light => ClerkMaterialButtonStyle.light,
-      ClerkButtonStyle.dark => ClerkMaterialButtonStyle.dark,
-      ClerkButtonStyle.ghost => ClerkMaterialButtonStyle
-          .light, // TODO: Add ghost style to material button
-    };
-  }
 }
 
 /// Style variants for Clerk buttons.
@@ -66,8 +57,10 @@ enum ClerkButtonStyle {
   light,
 
   /// Dark style button
-  dark,
+  dark;
 
-  /// Ghost style button
-  ghost,
+  ClerkMaterialButtonStyle get materialStyle => switch (this) {
+        ClerkButtonStyle.light => ClerkMaterialButtonStyle.light,
+        ClerkButtonStyle.dark => ClerkMaterialButtonStyle.dark,
+      };
 }

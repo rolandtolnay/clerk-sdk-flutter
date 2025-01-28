@@ -52,8 +52,8 @@ class _TopPortion extends StatelessWidget {
                       alignment: Alignment.centerLeft,
                       child: SizedBox(
                         width: 70.0,
-                        child: ClerkMaterialButton(
-                          style: ClerkMaterialButtonStyle.light,
+                        child: ClerkButton(
+                          style: ClerkButtonStyle.light,
                           label: Text(
                             'Upload',
                             style:
@@ -82,7 +82,7 @@ class _TopPortion extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: SizedBox(
               width: 150.0,
-              child: ClerkMaterialButton(
+              child: ClerkButton(
                 label: Text('Create Organization'),
               ),
             ),

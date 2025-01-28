@@ -272,7 +272,7 @@ class _SessionRow extends StatelessWidget {
                       Expanded(
                         child: Padding(
                           padding: horizontalPadding4,
-                          child: ClerkMaterialButton(
+                          child: ClerkButton(
                             onPressed: () =>
                                 action.callback(context, authState),
                             label: Row(
@@ -290,7 +290,7 @@ class _SessionRow extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            style: ClerkMaterialButtonStyle.light,
+                            style: ClerkButtonStyle.light,
                             height: 16,
                           ),
                         ),

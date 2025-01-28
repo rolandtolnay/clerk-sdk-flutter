@@ -74,6 +74,7 @@ class _MultiDigitCodeInputState extends State<MultiDigitCodeInput>
     );
     _focusNode = FocusNode();
     _focusNode.addListener(_onFocusChanged);
+
     WidgetsBinding.instance.addPostFrameCallback((_) => requestKeyboard());
     HardwareKeyboard.instance.addHandler(_onHwKeyChanged);
   }
@@ -120,8 +121,11 @@ class _MultiDigitCodeInputState extends State<MultiDigitCodeInput>
   void dispose() {
     HardwareKeyboard.instance.removeHandler(_onHwKeyChanged);
     _currentAutofillScope?.unregister(autofillId);
+
+    _focusNode.removeListener(_onFocusChanged);
     _focusNode.dispose();
     _closeInputConnectionIfNeeded();
+
     super.dispose();
   }
 
@@ -199,14 +203,14 @@ class _MultiDigitCodeInputState extends State<MultiDigitCodeInput>
   void _openInputConnection() {
     if (!_hasInputConnection) {
       _connection = TextInput.attach(this, textInputConfiguration);
-      _connection!.setEditingState(_editingValue);
+      _connection?.setEditingState(_editingValue);
     }
-    _connection!.show();
+    _connection?.show();
   }
 
   void _closeInputConnectionIfNeeded() {
     if (_hasInputConnection) {
-      _connection!.close();
+      _connection?.close();
       _connection = null;
     }
   }
@@ -220,23 +224,27 @@ class _MultiDigitCodeInputState extends State<MultiDigitCodeInput>
   Future<void> updateEditingValue(TextEditingValue value) async {
     if (value.text.length == widget.length) {
       setState(() => loading = true);
+
       final succeeded = await widget.onSubmit(value.text);
+
       if (context.mounted) {
-        if (succeeded == false) {
+        if (!succeeded) {
           _editingValue = const TextEditingValue(
             text: '',
             selection: TextSelection.collapsed(offset: 0),
           );
           requestKeyboard();
         }
+
         setState(() => loading = false);
       }
     } else {
       _editingValue = value;
     }
+
     if (context.mounted) {
       _openInputConnection();
-      setState(() => _connection!.setEditingState(_editingValue));
+      setState(() => _connection?.setEditingState(_editingValue));
     }
   }
 
@@ -306,9 +314,7 @@ class _PulsingCursorState extends State<_PulsingCursor>
   static const _cycleDuration = Duration(milliseconds: 1200);
 
   void _update() {
-    if (mounted) {
-      setState(() {});
-    }
+    if (mounted) setState(() {});
   }
 
   late final _controller =

@@ -1,9 +1,9 @@
 // ignore_for_file: prefer_const_constructors
 
 import 'package:clerk_flutter/src/assets.dart';
+import 'package:clerk_flutter/src/ui/components/clerk_button.dart';
 import 'package:clerk_flutter/src/widgets/common.dart';
 import 'package:clerk_flutter/src/widgets/ui/clerk_icon.dart';
-import 'package:clerk_flutter/src/widgets/ui/clerk_material_button.dart';
 import 'package:clerk_flutter/src/widgets/ui/clerk_vertical_card.dart';
 import 'package:clerk_flutter/src/widgets/ui/style/colors.dart';
 import 'package:clerk_flutter/src/widgets/ui/style/text_style.dart';
@@ -219,8 +219,8 @@ class _OrganizationTileState extends State<_OrganizationTile> {
               ),
               if (widget.organization.member) ...[
                 horizontalMargin12,
-                ClerkMaterialButton(
-                  style: ClerkMaterialButtonStyle.light,
+                ClerkButton(
+                  style: ClerkButtonStyle.light,
                   label: ClerkIcon(ClerkAssets.gearIcon, size: 12.0),
                   square: true,
                 ),

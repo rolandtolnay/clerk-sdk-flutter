@@ -140,7 +140,7 @@ class _ClerkSignUpPanelState extends State<ClerkSignUpPanel>
             ],
           ),
         ),
-        ClerkMaterialButton(
+        ClerkButton(
           onPressed: () => _continue(authState),
           label: Row(
             mainAxisAlignment: MainAxisAlignment.center,

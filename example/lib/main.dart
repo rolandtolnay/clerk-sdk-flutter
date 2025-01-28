@@ -56,34 +56,38 @@ class _ExampleAppState extends State<ExampleApp> {
         builder: (BuildContext context, Widget? child) {
           return ClerkErrorListener(child: child!);
         },
-        home: Scaffold(
-          backgroundColor: ClerkColors.whiteSmoke,
-          body: SafeArea(
-            child: Padding(
-              padding: horizontalPadding32,
-              child: Center(
-                child: ClerkAuthBuilder(
-                  signedInBuilder: (context, auth) => Column(
-                    children: [
-                      Spacer(),
-                      const ClerkUserButton(),
-                      const SizedBox(height: 40),
-                      ElevatedButton(
-                        onPressed: () async {
-                          final jwt = await auth.sessionToken();
-                          print(
-                              'JWT: ${jwt == null ? 'null' : jwt.isEmpty ? 'empty' : jwt}');
-                        },
-                        child: const Text('Print JWT'),
-                      ),
-                      Spacer(),
-                    ],
+        themeMode: ThemeMode.light,
+        home: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Scaffold(
+            backgroundColor: ClerkColors.whiteSmoke,
+            body: SafeArea(
+              child: Padding(
+                padding: horizontalPadding32,
+                child: Center(
+                  child: ClerkAuthBuilder(
+                    signedInBuilder: (context, auth) => Column(
+                      children: [
+                        Spacer(),
+                        const ClerkUserButton(),
+                        const SizedBox(height: 40),
+                        ElevatedButton(
+                          onPressed: () async {
+                            final jwt = await auth.sessionToken();
+                            print(
+                                'JWT: ${jwt == null ? 'null' : jwt.isEmpty ? 'empty' : jwt}');
+                          },
+                          child: const Text('Print JWT'),
+                        ),
+                        Spacer(),
+                      ],
+                    ),
+                    signedOutBuilder: (context, auth) {
+                      return const ClerkAuthenticationWidget(
+                        uiConfig: ClerkShadcnUIConfig(),
+                      );
+                    },
                   ),
-                  signedOutBuilder: (context, auth) {
-                    return const ClerkAuthenticationWidget(
-                      uiConfig: ClerkShadcnUIConfig(),
-                    );
-                  },
                 ),
               ),
             ),

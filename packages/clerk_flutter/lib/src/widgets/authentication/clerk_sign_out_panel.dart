@@ -19,7 +19,7 @@ class _ClerkSignOutPanelState extends State<ClerkSignOutPanel>
     final authState = ClerkAuth.of(context);
     return Padding(
       padding: horizontalPadding16,
-      child: ClerkMaterialButton(
+      child: ClerkButton(
         onPressed: () => authState.signOut(),
         label: Text(authState.translator.translate('Sign Out')),
       ),

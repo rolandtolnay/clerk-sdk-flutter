@@ -156,16 +156,20 @@ class _ClerkSignInPanelState extends State<ClerkSignInPanel>
                     ),
                 Padding(
                   padding: horizontalPadding32 + bottomPadding32 + topPadding16,
-                  child: ClerkMaterialButton(
-                    onPressed: () => _continue(authState),
-                    label: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Center(child: Text(translator.translate('Continue'))),
-                        horizontalMargin4,
-                        const Icon(Icons.arrow_right_sharp),
-                      ],
+                  child: Align(
+                    child: ClerkButton(
+                      onPressed: () => _continue(authState),
+                      label: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Center(child: Text(translator.translate('Continue'))),
+                          if (context.isMaterial) ...[
+                            horizontalMargin4,
+                            const Icon(Icons.arrow_right_sharp),
+                          ],
+                        ],
+                      ),
                     ),
                   ),
                 ),

@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../clerk_button.dart';
 
@@ -31,7 +32,17 @@ class ClerkShadcnButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Implement shadcn button
-    throw UnimplementedError('shadcn button not implemented yet');
+    return switch (style) {
+      ClerkButtonStyle.light => ShadButton.secondary(
+          onPressed: onPressed,
+          height: height,
+          child: label,
+        ),
+      ClerkButtonStyle.dark => ShadButton(
+          onPressed: onPressed,
+          height: height,
+          child: label,
+        ),
+    };
   }
 }

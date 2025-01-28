@@ -46,3 +46,15 @@ class ClerkMaterialUIConfig extends ClerkUIConfig {
   /// Material Design implementation of [ClerkUIConfig].
   const ClerkMaterialUIConfig();
 }
+
+/// Extension on [BuildContext] to provide convenient access to Clerk UI configuration.
+extension ClerkUIConfigExtension on BuildContext {
+  /// Gets the current [ClerkUIConfig] from the widget tree.
+  ClerkUIConfig get clerkUIConfig => ClerkUIConfig.of(this);
+
+  /// Whether the current UI configuration is Material Design.
+  bool get isMaterial => clerkUIConfig is ClerkMaterialUIConfig;
+
+  /// Whether the current UI configuration is shadcn-ui.
+  bool get isShadcn => clerkUIConfig is ClerkShadcnUIConfig;
+}

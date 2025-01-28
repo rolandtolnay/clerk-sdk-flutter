@@ -54,20 +54,29 @@ class ClerkInputDialog extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                if (showOk) //
-                  ClerkMaterialButton(
-                    label: Text(translator.translate('OK')),
-                    onPressed: () => Navigator.of(context).pop(true),
-                    style: ClerkMaterialButtonStyle.light,
-                    height: 16,
+                if (showOk)
+                  Expanded(
+                    child: Padding(
+                      padding: leftPadding8,
+                      child: ClerkButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        label: Text(translator.translate('OK')),
+                        style: ClerkButtonStyle.light,
+                      ),
+                    ),
                   ),
                 horizontalMargin8,
-                ClerkMaterialButton(
-                  label: Text(translator.translate('Cancel')),
-                  onPressed: () => Navigator.of(context).pop(false),
-                  style: ClerkMaterialButtonStyle.light,
-                  height: 16,
-                ),
+                if (showOk)
+                  Expanded(
+                    child: Padding(
+                      padding: rightPadding8,
+                      child: ClerkButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        label: Text(translator.translate('Cancel')),
+                        style: ClerkButtonStyle.light,
+                      ),
+                    ),
+                  ),
               ],
             ),
           ],

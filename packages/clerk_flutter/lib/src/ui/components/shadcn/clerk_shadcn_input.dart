@@ -150,10 +150,6 @@ class _ShadcnInputFieldState extends State<_ShadcnInputField> {
                   width: 32,
                   height: 32,
                   padding: EdgeInsets.zero,
-                  decoration: const ShadDecoration(
-                    border: ShadBorder.none,
-                    secondaryBorder: ShadBorder.none,
-                  ),
                   icon: Icon(
                     widget.obscureText
                         ? Icons.visibility_off
