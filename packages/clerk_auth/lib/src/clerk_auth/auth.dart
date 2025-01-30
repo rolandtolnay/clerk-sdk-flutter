@@ -278,12 +278,15 @@ class Auth {
     return client;
   }
 
-  /// Resends a verification code for the current sign in attempt
+  /// Resends a verification code for the current sign in or sign up attempt
   ///
   /// Takes a required [strategy] parameter which must be a code-based strategy
   /// (e.g. [Strategy.emailCode] or [Strategy.phoneCode]).
   ///
   /// If there is an active sign in attempt that requires code verification,
+  /// this will trigger sending a new code via the specified strategy.
+  ///
+  /// If there is an active sign up attempt that requires code verification,
   /// this will trigger sending a new code via the specified strategy.
   ///
   /// Returns the updated [Client] object after requesting the new code.
@@ -295,6 +298,9 @@ class Auth {
       await _api
           .prepareSignIn(signIn, stage: stage, strategy: strategy)
           .then(_housekeeping);
+    }
+    if (client.signUp case SignUp signUp when strategy.requiresCode == true) {
+      await _api.prepareSignUp(signUp, strategy: strategy).then(_housekeeping);
     }
 
     update();
