@@ -67,11 +67,7 @@ class _ExampleAppState extends State<ExampleApp> {
                       const ClerkUserButton(),
                       const SizedBox(height: 40),
                       ElevatedButton(
-                        onPressed: () async {
-                          final jwt = await auth.sessionToken();
-                          print(
-                              'JWT: ${jwt == null ? 'null' : jwt.isEmpty ? 'empty' : jwt}');
-                        },
+                        onPressed: () async {},
                         child: const Text('Print JWT'),
                       ),
                       Spacer(),

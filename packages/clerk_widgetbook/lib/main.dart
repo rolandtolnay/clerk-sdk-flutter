@@ -1,7 +1,7 @@
+import 'package:clerk_widgetbook/theme_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
-import 'package:clerk_widgetbook/theme_scaffold.dart';
 
 import 'main.directories.g.dart';
 
@@ -22,7 +22,7 @@ class WidgetbookApp extends StatelessWidget {
         InspectorAddon(),
         TimeDilationAddon(),
         ZoomAddon(),
-        TextScaleAddon(scales: [1.0, 1.25, 1.5, 2.0, 3.0]),
+        TextScaleAddon(min: 1.0, max: 3.0),
         LocalizationAddon(
           locales: [const Locale('en', 'US')],
           localizationsDelegates: [

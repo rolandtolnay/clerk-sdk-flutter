@@ -2,12 +2,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:clerk_auth/src/clerk_api/api.dart';
-import 'package:clerk_auth/src/clerk_api/telemetry.dart';
-import 'package:clerk_auth/src/clerk_auth/auth_error.dart';
-import 'package:clerk_auth/src/clerk_auth/http_service.dart';
-import 'package:clerk_auth/src/clerk_auth/persistor.dart';
 import 'package:clerk_auth/src/models/api/api_response.dart';
-import 'package:clerk_auth/src/models/models.dart';
+
+import '../../clerk_auth.dart';
 
 export 'clerk_auth_exception.dart';
 export 'http_service.dart';
@@ -176,7 +173,7 @@ class Auth {
         : null;
     final token = await _api.sessionToken(org);
     if (token is! SessionToken) {
-      throw AuthError(message: 'No session token retrieved');
+      throw ClerkAuthException(message: 'No session token retrieved');
     }
     return token;
   }
@@ -480,13 +477,6 @@ class Auth {
   Future<void> updateUserImage(File file) async {
     await _api.updateAvatar(file).then(_housekeeping);
     update();
-  }
-
-  /// Return the [sessionToken] for the current active [Session], refreshing it
-  /// if required
-  ///
-  Future<String?> sessionToken() async {
-    return await _api.sessionToken();
   }
 
   Future<Client> _pollForCompletion() async {
