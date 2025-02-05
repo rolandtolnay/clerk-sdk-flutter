@@ -1,7 +1,18 @@
-import 'package:clerk_auth/clerk_auth.dart';
+import 'package:clerk_auth/src/clerk_auth/auth_error.dart';
+import 'package:clerk_auth/src/models/client/strategy.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'enums.g.dart';
+
+/// [SessionTokenPollMode] manages how to refresh the [sessionToken]
+///
+enum SessionTokenPollMode {
+  /// Hungry refresh: whenever token expires (more http access and power use)
+  hungry,
+
+  /// Lazy refresh: only as required (with possible increased latency on access)
+  lazy;
+}
 
 /// [EnrollmentMode] Clerk object
 @JsonEnum(fieldRename: FieldRename.snake, alwaysCreate: true)

@@ -7,18 +7,20 @@ part of 'organization.dart';
 // **************************************************************************
 
 Organization _$OrganizationFromJson(Map<String, dynamic> json) => Organization(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      maxAllowedMemberships: (json['max_allowed_memberships'] as num).toInt(),
-      adminDeleteEnabled: json['admin_delete_enabled'] as bool,
-      slug: json['slug'] as String,
-      logoUrl: json['logo_url'] as String,
-      imageUrl: json['image_url'] as String,
-      hasImage: json['has_image'] as bool,
-      membersCount: (json['members_count'] as num).toInt(),
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      maxAllowedMemberships:
+          (json['max_allowed_memberships'] as num?)?.toInt() ?? 0,
+      adminDeleteEnabled: json['admin_delete_enabled'] as bool? ?? false,
+      slug: json['slug'] as String? ?? '',
+      logoUrl: json['logo_url'] as String? ?? '',
+      imageUrl: json['image_url'] as String? ?? '',
+      hasImage: json['has_image'] as bool? ?? false,
+      membersCount: (json['members_count'] as num?)?.toInt() ?? 0,
       pendingInvitationsCount:
-          (json['pending_invitations_count'] as num).toInt(),
-      publicMetadata: json['public_metadata'] as Map<String, dynamic>,
+          (json['pending_invitations_count'] as num?)?.toInt() ?? 0,
+      publicMetadata:
+          json['public_metadata'] as Map<String, dynamic>? ?? const {},
       updatedAt: intToDateTime(json['updated_at']),
       createdAt: intToDateTime(json['created_at']),
     );

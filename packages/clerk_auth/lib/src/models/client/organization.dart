@@ -1,6 +1,5 @@
+import 'package:clerk_auth/src/utils/json_serialization_helpers.dart';
 import 'package:json_annotation/json_annotation.dart';
-
-import 'helpers.dart';
 
 part 'organization.g.dart';
 
@@ -9,19 +8,19 @@ part 'organization.g.dart';
 class Organization {
   /// Constructor
   const Organization({
-    required this.id,
-    required this.name,
-    required this.maxAllowedMemberships,
-    required this.adminDeleteEnabled,
-    required this.slug,
-    required this.logoUrl,
-    required this.imageUrl,
-    required this.hasImage,
-    required this.membersCount,
-    required this.pendingInvitationsCount,
-    required this.publicMetadata,
-    required this.updatedAt,
-    required this.createdAt,
+    this.id = '',
+    this.name = '',
+    this.maxAllowedMemberships = 0,
+    this.adminDeleteEnabled = false,
+    this.slug = '',
+    this.logoUrl = '',
+    this.imageUrl = '',
+    this.hasImage = false,
+    this.membersCount = 0,
+    this.pendingInvitationsCount = 0,
+    this.publicMetadata = const {},
+    this.updatedAt,
+    this.createdAt,
   });
 
   /// id
@@ -64,6 +63,12 @@ class Organization {
   /// created at
   @JsonKey(fromJson: intToDateTime)
   final DateTime? createdAt;
+
+  /// The [id] for use externally
+  String? get externalId => this == personal ? null : id;
+
+  /// The id used internally for the personal organization
+  static const personal = Organization();
 
   /// fromJson
   static Organization fromJson(Map<String, dynamic> json) =>

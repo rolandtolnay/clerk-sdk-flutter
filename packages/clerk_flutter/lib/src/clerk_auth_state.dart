@@ -16,6 +16,7 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
     required super.persistor,
     required this.translator,
     super.pollMode,
+    super.httpService,
     Widget? loading,
     super.sendTelemetryData,
   }) : _loadingOverlay = OverlayEntry(
@@ -27,9 +28,10 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
     required String publishableKey,
     clerk.Persistor? persistor,
     ClerkTranslator translator = const DefaultClerkTranslator(),
-    clerk.SessionTokenPollMode pollMode = clerk.SessionTokenPollMode.onDemand,
+    clerk.SessionTokenPollMode pollMode = clerk.SessionTokenPollMode.lazy,
     bool sendTelemetryData = true,
     Widget? loading,
+    clerk.HttpService httpService = const clerk.DefaultHttpService(),
   }) async {
     final provider = ClerkAuthState._(
       publishableKey: publishableKey,
@@ -41,6 +43,7 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
       pollMode: pollMode,
       loading: loading,
       sendTelemetryData: sendTelemetryData,
+      httpService: httpService,
     );
     await provider.initialize();
     return provider;

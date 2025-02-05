@@ -2,18 +2,37 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:clerk_auth/clerk_auth.dart';
+import 'package:clerk_auth/src/clerk_auth/http_service.dart';
+import 'package:clerk_auth/src/clerk_auth/persistor.dart';
+import 'package:clerk_auth/src/clerk_constants.dart';
+import 'package:clerk_auth/src/models/enums.dart';
+import 'package:clerk_auth/src/models/telemetry/telemetric_event.dart';
+import 'package:clerk_auth/src/utils/logging.dart';
 
 /// Telemetry
 ///
 class Telemetry with Logging {
-  /// Create a [Telemetry] object
-  Telemetry(
+  Telemetry._(
     this._publishableKey,
     this._persistor,
     this._httpService,
     this._sendTelemetryData,
   );
+
+  /// Create a [Telemetry] object
+  factory Telemetry({
+    required String publishableKey,
+    required Persistor persistor,
+    required HttpService httpService,
+    required bool sendTelemetryData,
+  }) {
+    return Telemetry._(
+      publishableKey,
+      persistor,
+      httpService,
+      sendTelemetryData,
+    );
+  }
 
   final bool _sendTelemetryData;
   final String _publishableKey;
@@ -25,12 +44,24 @@ class Telemetry with Logging {
 
   static const _kTelemetricEventQueueKey = 'telemetricEventQueue';
   static const _telemetricEventsQueueMaxLength = 2000;
-  static final _telemetryEndpoint =
-      Uri.parse('https://clerk-telemetry.com/v1/event');
-  static const _telemetryPeriod = Duration(seconds: 27);
+  static const _telemetryPeriod = Duration(
+    milliseconds: int.fromEnvironment(
+      'telemetry_period_ms',
+      defaultValue: 29373, // nearly but not exactly 30s
+    ),
+  );
+  static final _telemetryEndpoint = Uri.parse(
+    const String.fromEnvironment(
+      'telemetry_endpoint',
+      defaultValue: 'https://clerk-telemetry.com/v1/event',
+    ),
+  );
 
   /// Are we telemetricising?
-  bool get isEnabled => _sendTelemetryData && _instanceType.isDevelopment;
+  bool get isEnabled =>
+      _sendTelemetryData &&
+      _instanceType.isDevelopment &&
+      const bool.fromEnvironment('telemetry', defaultValue: true);
 
   /// Initialise telemetry
   Future<void> initialize({required InstanceType instanceType}) async {
@@ -105,7 +136,7 @@ class Telemetry with Logging {
         HttpMethod.post,
         _telemetryEndpoint,
         body: json.encode({
-          'events': [...events.map(_telemetryPayload)]
+          'events': [...events.map(_telemetryPayload)],
         }),
         headers: {
           HttpHeaders.contentTypeHeader: 'application/json',

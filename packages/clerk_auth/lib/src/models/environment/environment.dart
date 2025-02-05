@@ -1,4 +1,8 @@
-import 'package:clerk_auth/clerk_auth.dart';
+import 'package:clerk_auth/src/models/client/strategy.dart';
+import 'package:clerk_auth/src/models/environment/auth_config.dart';
+import 'package:clerk_auth/src/models/environment/display_config.dart';
+import 'package:clerk_auth/src/models/environment/organization_settings.dart';
+import 'package:clerk_auth/src/models/environment/user_settings.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'environment.g.dart';

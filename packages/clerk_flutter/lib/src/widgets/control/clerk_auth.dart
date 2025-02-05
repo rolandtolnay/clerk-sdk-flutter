@@ -10,11 +10,12 @@ class ClerkAuth extends StatefulWidget {
   const ClerkAuth({
     super.key,
     this.publishableKey,
-    this.pollMode = clerk.SessionTokenPollMode.onDemand,
+    this.pollMode = clerk.SessionTokenPollMode.lazy,
     this.authState,
     this.translator = const DefaultClerkTranslator(),
     this.persistor,
     this.loading,
+    this.httpService,
     required this.child,
   }) : assert(
           (publishableKey is String) != (authState is ClerkAuthState),
@@ -39,6 +40,9 @@ class ClerkAuth extends StatefulWidget {
 
   /// Loading widget
   final Widget? loading;
+
+  /// The [HttpService]
+  final clerk.HttpService? httpService;
 
   /// child widget tree
   final Widget child;

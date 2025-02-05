@@ -1,6 +1,7 @@
+import 'package:clerk_auth/src/models/client/organization.dart';
+import 'package:clerk_auth/src/models/client/user_public.dart';
+import 'package:clerk_auth/src/utils/json_serialization_helpers.dart';
 import 'package:json_annotation/json_annotation.dart';
-
-import 'models.dart';
 
 part 'organization_membership.g.dart';
 
