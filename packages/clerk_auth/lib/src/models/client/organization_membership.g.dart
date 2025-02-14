@@ -26,8 +26,6 @@ Map<String, dynamic> _$OrganizationMembershipToJson(
       'role': instance.role,
       'organization': instance.organization.toJson(),
       'public_user_data': instance.publicUserData.toJson(),
-      if (instance.updatedAt?.toIso8601String() case final value?)
-        'updated_at': value,
-      if (instance.createdAt?.toIso8601String() case final value?)
-        'created_at': value,
+      'updated_at': dateTimeToInt(instance.updatedAt),
+      'created_at': dateTimeToInt(instance.createdAt),
     };

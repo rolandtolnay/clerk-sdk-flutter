@@ -48,6 +48,9 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
           (json['lockout_expires_in_seconds'] as num?)?.toInt(),
       verificationAttemptsRemaining:
           (json['verification_attempts_remaining'] as num?)?.toInt(),
+      externalAccounts: (json['external_accounts'] as List<dynamic>?)
+          ?.map((e) => ExternalAccount.fromJson(e as Map<String, dynamic>))
+          .toList(),
       updatedAt: intToDateTime(json['updated_at']),
       createdAt: intToDateTime(json['created_at']),
       lastActiveAt: intToDateTime(json['last_active_at']),
@@ -86,6 +89,9 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       if (instance.organizationMemberships?.map((e) => e.toJson()).toList()
           case final value?)
         'organization_memberships': value,
+      if (instance.externalAccounts?.map((e) => e.toJson()).toList()
+          case final value?)
+        'external_accounts': value,
       if (instance.passwordEnabled case final value?) 'password_enabled': value,
       if (instance.twoFactorEnabled case final value?)
         'two_factor_enabled': value,
@@ -100,12 +106,8 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
         'verification_attempts_remaining': value,
       if (instance.deleteSelfEnabled case final value?)
         'delete_self_enabled': value,
-      if (instance.lastSignInAt?.toIso8601String() case final value?)
-        'last_sign_in_at': value,
-      if (instance.updatedAt?.toIso8601String() case final value?)
-        'updated_at': value,
-      if (instance.createdAt?.toIso8601String() case final value?)
-        'created_at': value,
-      if (instance.lastActiveAt?.toIso8601String() case final value?)
-        'last_active_at': value,
+      'last_sign_in_at': dateTimeToInt(instance.lastSignInAt),
+      'updated_at': dateTimeToInt(instance.updatedAt),
+      'created_at': dateTimeToInt(instance.createdAt),
+      'last_active_at': dateTimeToInt(instance.lastActiveAt),
     };

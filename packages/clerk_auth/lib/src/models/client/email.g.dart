@@ -23,8 +23,6 @@ Map<String, dynamic> _$EmailToJson(Email instance) => <String, dynamic>{
         'verification': value,
       'email_address': instance.emailAddress,
       'reserved': instance.reserved,
-      if (instance.updatedAt?.toIso8601String() case final value?)
-        'updated_at': value,
-      if (instance.createdAt?.toIso8601String() case final value?)
-        'created_at': value,
+      'updated_at': dateTimeToInt(instance.updatedAt),
+      'created_at': dateTimeToInt(instance.createdAt),
     };

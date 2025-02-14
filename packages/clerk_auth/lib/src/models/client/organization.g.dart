@@ -21,8 +21,12 @@ Organization _$OrganizationFromJson(Map<String, dynamic> json) => Organization(
           (json['pending_invitations_count'] as num?)?.toInt() ?? 0,
       publicMetadata:
           json['public_metadata'] as Map<String, dynamic>? ?? const {},
-      updatedAt: intToDateTime(json['updated_at']),
-      createdAt: intToDateTime(json['created_at']),
+      updatedAt: json['updated_at'] == null
+          ? DateTimeExt.epoch
+          : intToDateTime(json['updated_at']),
+      createdAt: json['created_at'] == null
+          ? DateTimeExt.epoch
+          : intToDateTime(json['created_at']),
     );
 
 Map<String, dynamic> _$OrganizationToJson(Organization instance) =>
@@ -38,8 +42,6 @@ Map<String, dynamic> _$OrganizationToJson(Organization instance) =>
       'members_count': instance.membersCount,
       'pending_invitations_count': instance.pendingInvitationsCount,
       'public_metadata': instance.publicMetadata,
-      if (instance.updatedAt?.toIso8601String() case final value?)
-        'updated_at': value,
-      if (instance.createdAt?.toIso8601String() case final value?)
-        'created_at': value,
+      'updated_at': dateTimeToInt(instance.updatedAt),
+      'created_at': dateTimeToInt(instance.createdAt),
     };

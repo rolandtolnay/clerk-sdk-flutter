@@ -21,6 +21,7 @@ void main() {
           publishableKey: 'NOT A PUBLISHABLE KEY',
           persistor: Persistor.none,
           httpService: HttpService.none,
+          pollMode: SessionTokenPollMode.lazy,
         ),
         throwsA(const TypeMatcher<FormatException>()),
       );
@@ -31,6 +32,7 @@ void main() {
         publishableKey: publishableKey,
         persistor: Persistor.none,
         httpService: HttpService.none,
+        pollMode: SessionTokenPollMode.lazy,
       );
       expect(result.domain, isA<String>());
     });
@@ -40,6 +42,7 @@ void main() {
         publishableKey: publishableKey,
         persistor: Persistor.none,
         httpService: HttpService.none,
+        pollMode: SessionTokenPollMode.lazy,
       );
       expect(result.domain, domain);
     });

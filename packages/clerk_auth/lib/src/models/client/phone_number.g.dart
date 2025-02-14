@@ -28,8 +28,6 @@ Map<String, dynamic> _$PhoneNumberToJson(PhoneNumber instance) =>
       'reserved': instance.reserved,
       'reserved_for_second_factor': instance.reservedForSecondFactor,
       'default_second_factor': instance.defaultSecondFactor,
-      if (instance.updatedAt?.toIso8601String() case final value?)
-        'updated_at': value,
-      if (instance.createdAt?.toIso8601String() case final value?)
-        'created_at': value,
+      'updated_at': dateTimeToInt(instance.updatedAt),
+      'created_at': dateTimeToInt(instance.createdAt),
     };

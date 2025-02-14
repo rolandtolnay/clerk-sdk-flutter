@@ -23,8 +23,7 @@ Map<String, dynamic> _$VerificationToJson(Verification instance) =>
       if (instance.nonce case final value?) 'nonce': value,
       if (instance.providerUrl case final value?)
         'external_verification_redirect_url': value,
-      if (instance.expireAt?.toIso8601String() case final value?)
-        'expire_at': value,
+      'expire_at': dateTimeToInt(instance.expireAt),
     };
 
 const _$StatusEnumMap = {

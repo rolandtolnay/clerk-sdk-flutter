@@ -20,10 +20,7 @@ Map<String, dynamic> _$PasskeyToJson(Passkey instance) => <String, dynamic>{
       'id': instance.id,
       'name': instance.name,
       'verification': instance.verification.toJson(),
-      if (instance.updatedAt?.toIso8601String() case final value?)
-        'updated_at': value,
-      if (instance.createdAt?.toIso8601String() case final value?)
-        'created_at': value,
-      if (instance.lastUsedAt?.toIso8601String() case final value?)
-        'last_used_at': value,
+      'updated_at': dateTimeToInt(instance.updatedAt),
+      'created_at': dateTimeToInt(instance.createdAt),
+      'last_used_at': dateTimeToInt(instance.lastUsedAt),
     };

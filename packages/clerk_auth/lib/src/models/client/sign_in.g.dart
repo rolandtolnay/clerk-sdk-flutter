@@ -49,8 +49,7 @@ Map<String, dynamic> _$SignInToJson(SignIn instance) => <String, dynamic>{
         'second_factor_verification': value,
       if (instance.createdSessionId case final value?)
         'created_session_id': value,
-      if (instance.abandonAt?.toIso8601String() case final value?)
-        'abandon_at': value,
+      'abandon_at': dateTimeToInt(instance.abandonAt),
       'supported_first_factors':
           instance.supportedFirstFactors.map((e) => e.toJson()).toList(),
       'supported_second_factors':

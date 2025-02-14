@@ -22,8 +22,6 @@ Map<String, dynamic> _$Web3WalletToJson(Web3Wallet instance) =>
       if (instance.verification?.toJson() case final value?)
         'verification': value,
       'web3_wallet': instance.web3Wallet,
-      if (instance.updatedAt?.toIso8601String() case final value?)
-        'updated_at': value,
-      if (instance.createdAt?.toIso8601String() case final value?)
-        'created_at': value,
+      'updated_at': dateTimeToInt(instance.updatedAt),
+      'created_at': dateTimeToInt(instance.createdAt),
     };

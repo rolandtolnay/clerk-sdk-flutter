@@ -28,12 +28,9 @@ Map<String, dynamic> _$SessionToJson(Session instance) => <String, dynamic>{
       if (instance.lastActiveToken?.toJson() case final value?)
         'last_active_token': value,
       'user': instance.user.toJson(),
-      if (instance.lastActiveAt?.toIso8601String() case final value?)
-        'last_active_at': value,
-      if (instance.expireAt?.toIso8601String() case final value?)
-        'expire_at': value,
-      if (instance.abandonAt?.toIso8601String() case final value?)
-        'abandon_at': value,
+      'last_active_at': dateTimeToInt(instance.lastActiveAt),
+      'expire_at': dateTimeToInt(instance.expireAt),
+      'abandon_at': dateTimeToInt(instance.abandonAt),
     };
 
 const _$StatusEnumMap = {

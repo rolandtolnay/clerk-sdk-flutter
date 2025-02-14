@@ -1,4 +1,4 @@
-import 'package:clerk_auth/src/models/enums.dart';
+import 'package:clerk_auth/src/models/client/field.dart';
 
 import '../../clerk_auth/clerk_auth_exception.dart';
 
@@ -199,7 +199,7 @@ class Strategy {
       Field.phoneNumber => Strategy.phoneCode,
       Field.emailAddress => Strategy.emailCode,
       _ => throw ClerkAuthException(
-          message: 'No way to verify ###',
+          message: 'No strategy associated with ###',
           substitution: field.name,
         ),
     };
