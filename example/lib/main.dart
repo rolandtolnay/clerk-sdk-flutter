@@ -17,9 +17,9 @@ Future<void> main() async {
   final persistor = await FilePersistor.create(storageDirectory: appDirectory);
 
   final authState = await ClerkAuthState.create(
-    config: ClerkAuthConfig(publishableKey: key),
-    persistor: persistor,
-  );
+      config: ClerkAuthConfig(publishableKey: key),
+      persistor: persistor,
+      sendTelemetryData: false);
 
   runApp(ExampleApp(authState: authState));
 }
@@ -53,23 +53,26 @@ class _ExampleAppState extends State<ExampleApp> {
         },
         home: Scaffold(
           body: SafeArea(
-            child: Center(
-              child: ClerkAuthBuilder(
-                signedInBuilder: (context, auth) => Column(
-                  children: [
-                    Spacer(),
-                    const ClerkUserButton(),
-                    const SizedBox(height: 40),
-                    ElevatedButton(
-                      onPressed: () async {},
-                      child: const Text('Print JWT'),
-                    ),
-                    Spacer(),
-                  ],
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: ClerkAuthBuilder(
+                  signedInBuilder: (context, auth) => Column(
+                    children: [
+                      Spacer(),
+                      const ClerkUserButton(),
+                      const SizedBox(height: 40),
+                      ElevatedButton(
+                        onPressed: () async {},
+                        child: const Text('Print JWT'),
+                      ),
+                      Spacer(),
+                    ],
+                  ),
+                  signedOutBuilder: (context, auth) {
+                    return const ClerkAuthentication();
+                  },
                 ),
-                signedOutBuilder: (context, auth) {
-                  return const ClerkAuthentication();
-                },
               ),
             ),
           ),
