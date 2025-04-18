@@ -416,37 +416,23 @@ class Auth {
       );
     }
 
-    switch (client.signUp) {
-      case null:
-        await _api
-            .createSignUp(
-              strategy: strategy,
-              firstName: firstName,
-              lastName: lastName,
-              username: username,
-              emailAddress: emailAddress,
-              phoneNumber: phoneNumber,
-              password: password,
-              code: code,
-              token: token,
-            )
-            .then(_housekeeping);
+    if (client.signUp == null) {
+      await _api
+          .createSignUp(
+            strategy: strategy,
+            firstName: firstName,
+            lastName: lastName,
+            username: username,
+            emailAddress: emailAddress,
+            phoneNumber: phoneNumber,
+            password: password,
+            code: code,
+            token: token,
+          )
+          .then(_housekeeping);
 
-      case SignUp signUp when signUp.missingFields.isNotEmpty:
-        await _api
-            .updateSignUp(
-              signUp,
-              strategy: strategy,
-              firstName: firstName,
-              lastName: lastName,
-              username: username,
-              emailAddress: emailAddress,
-              phoneNumber: phoneNumber,
-              password: password,
-              code: code,
-              token: token,
-            )
-            .then(_housekeeping);
+      update();
+      return client;
     }
 
     if (client.user is! User) {
@@ -475,6 +461,21 @@ class Auth {
           await _api
               .attemptSignUp(signUp,
                   strategy: strategy, code: code, signature: signature)
+              .then(_housekeeping);
+
+        case SignUp signUp when signUp.status == Status.missingRequirements:
+          await _api
+              .createSignUp(
+                strategy: strategy,
+                firstName: firstName,
+                lastName: lastName,
+                username: username,
+                emailAddress: emailAddress,
+                phoneNumber: phoneNumber,
+                password: password,
+                code: code,
+                token: token,
+              )
               .then(_housekeeping);
       }
     }
