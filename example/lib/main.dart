@@ -17,9 +17,10 @@ Future<void> main() async {
   final persistor = await FilePersistor.create(storageDirectory: appDirectory);
 
   final authState = await ClerkAuthState.create(
-      config: ClerkAuthConfig(publishableKey: key),
-      persistor: persistor,
-      sendTelemetryData: false);
+    config:
+        ClerkAuthConfig(publishableKey: key, telemetryPeriod: Duration.zero),
+    persistor: persistor,
+  );
 
   runApp(ExampleApp(authState: authState));
 }

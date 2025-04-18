@@ -23,7 +23,6 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
     this._config, {
     required super.persistor,
     super.httpService,
-    bool sendTelemetryData = true,
   })  : _loadingOverlay = ClerkLoadingOverlay(_config),
         super(config: _config);
 
@@ -31,7 +30,6 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
   static Future<ClerkAuthState> create({
     required ClerkAuthConfig config,
     clerk.Persistor? persistor,
-    bool sendTelemetryData = true,
     clerk.HttpService? httpService,
   }) async {
     final authState = ClerkAuthState._(
@@ -40,7 +38,6 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
           await clerk.DefaultPersistor.create(
             storageDirectory: await getApplicationDocumentsDirectory(),
           ),
-      sendTelemetryData: sendTelemetryData,
       httpService: httpService,
     );
     await authState.initialize();
