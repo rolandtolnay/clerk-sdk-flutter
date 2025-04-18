@@ -143,7 +143,8 @@ class Auth {
     } else {
       throw ClerkAuthException(
         statusCode: resp.status,
-        codeList: resp.errors?.map((e) => e.code).whereType<String>() ?? [],
+        serverCodeList:
+            resp.errors?.map((e) => e.code).whereType<String>() ?? [],
         message: resp.errorMessage,
       );
     }

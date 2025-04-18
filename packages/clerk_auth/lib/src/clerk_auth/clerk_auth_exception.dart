@@ -5,7 +5,7 @@ class ClerkAuthException implements Exception {
   ClerkAuthException({
     required this.message,
     this.statusCode,
-    this.codeList = const [],
+    this.serverCodeList = const [],
     this.substitution,
   });
 
@@ -13,7 +13,7 @@ class ClerkAuthException implements Exception {
   final int? statusCode;
 
   /// List of backend error codes
-  final Iterable<String> codeList;
+  final Iterable<String> serverCodeList;
 
   /// The associated [message]
   final String message;
@@ -32,6 +32,6 @@ class ClerkAuthException implements Exception {
   /// Returns a debug-friendly string representation of the exception
   /// including the message, error codes, status code and any substitution value
   String get debugDescription {
-    return 'ClerkAuthException(message: $message, codeList: $codeList, statusCode: $statusCode, substitution: $substitution)';
+    return 'ClerkAuthException(message: $message, codeList: $serverCodeList, statusCode: $statusCode, substitution: $substitution)';
   }
 }
