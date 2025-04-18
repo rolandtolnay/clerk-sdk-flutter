@@ -157,14 +157,7 @@ class Auth {
   }
 
   ApiResponse _housekeeping(ApiResponse resp) {
-    if (resp.isError) {
-      addError(
-        ClerkAuthException(
-          code: AuthErrorCode.serverErrorResponse,
-          message: resp.errorMessage,
-        ),
-      );
-    } else if (resp.client case Client client) {
+    if (resp.client case Client client when resp.isOkay) {
       this.client = client;
     } else {
       throw ClerkAuthException(
