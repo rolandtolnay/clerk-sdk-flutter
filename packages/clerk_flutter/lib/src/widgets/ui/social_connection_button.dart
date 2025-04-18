@@ -1,5 +1,7 @@
 import 'package:clerk_auth/clerk_auth.dart' as clerk;
-import 'package:clerk_flutter/clerk_flutter.dart';
+import 'package:clerk_flutter/src/widgets/ui/common.dart';
+import 'package:clerk_flutter/src/widgets/ui/style/colors.dart';
+import 'package:clerk_flutter/src/widgets/ui/style/text_style.dart';
 import 'package:flutter/material.dart';
 
 /// The [SocialConnectionButton] is to be used with the authentication flow when working with
@@ -16,8 +18,8 @@ class SocialConnectionButton extends StatelessWidget {
     required this.onPressed,
   });
 
-  /// the function to call when button pressed
-  final ValueChanged<clerk.Strategy> onPressed;
+  /// Function to call when a strategy chosen
+  final VoidCallback onPressed;
 
   /// The oAuth provider this button represents.
   final clerk.SocialConnection connection;
@@ -25,7 +27,7 @@ class SocialConnectionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialButton(
-      onPressed: () => onPressed(connection.strategy),
+      onPressed: onPressed,
       elevation: 2.0,
       shape: const RoundedRectangleBorder(
         borderRadius: borderRadius4,

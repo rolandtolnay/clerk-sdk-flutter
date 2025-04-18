@@ -1,5 +1,23 @@
 import 'dart:convert';
 
+/// Extension on [Object] useful for debugging
+extension ObjectIdentity on Object {
+  /// Returns a summary of the runtime type and hash code of `object`.
+  String describeIdentity([String optimizedValue = '<optimized out>']) {
+    assert(() {
+      optimizedValue = runtimeType.toString();
+      return true;
+    }());
+    return '$optimizedValue#$shortHash';
+  }
+
+  /// Returns a 5 character long hexadecimal string generated from
+  /// [Object.hashCode]'s 20 least-significant bits.
+  String get shortHash {
+    return hashCode.toUnsigned(20).toRadixString(16).padLeft(5, '0');
+  }
+}
+
 /// Extensions to the [Map] class
 extension MapExtension<T, S> on Map<T, S> {
   /// Return a version of this map where all keys
@@ -34,6 +52,9 @@ extension StringExtension on String {
   /// Decode a [String] that has been base64 encoded
   ///
   String get b64decoded => utf8.decode(base64.decode(base64.normalize(this)));
+
+  /// A version of the [String] which is null if empty
+  String? get orNullIfEmpty => isNotEmpty ? this : null;
 }
 
 /// Extensions to the [List] class
@@ -60,6 +81,19 @@ extension ListExtension<T> on List<T> {
       }
     }
   }
+
+  /// Do we contain a thing?
+  bool doesNotContain(T t) => contains(t) == false;
+}
+
+/// Extension class for [Duration]
+///
+extension DurationExt on Duration {
+  /// Is this duration zero length?
+  bool get isZero => inMicroseconds == 0;
+
+  /// Is this not a zero duration?
+  bool get isNotZero => isZero == false;
 }
 
 /// Extension class to create extra statics for [DateTime] use

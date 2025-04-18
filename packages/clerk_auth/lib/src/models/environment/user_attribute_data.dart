@@ -1,12 +1,15 @@
 import 'package:clerk_auth/src/models/client/strategy.dart';
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:clerk_auth/src/utils/json_serialization_helpers.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 part 'user_attribute_data.g.dart';
 
 /// [UserAttributeData] Clerk object
+@immutable
 @JsonSerializable()
-class UserAttributeData {
+class UserAttributeData with InformativeToStringMixin {
   /// Constructor
   const UserAttributeData({
     this.isEnabled = true,
@@ -20,15 +23,12 @@ class UserAttributeData {
   });
 
   /// first factors
-  @JsonKey(fromJson: toStrategyList)
   final List<Strategy> firstFactors;
 
   /// second factors
-  @JsonKey(fromJson: toStrategyList)
   final List<Strategy> secondFactors;
 
   /// verifications
-  @JsonKey(fromJson: toStrategyList)
   final List<Strategy> verifications;
 
   /// used for first factor?
@@ -59,5 +59,6 @@ class UserAttributeData {
       _$UserAttributeDataFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$UserAttributeDataToJson(this);
 }

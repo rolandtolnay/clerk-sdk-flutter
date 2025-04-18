@@ -1,12 +1,15 @@
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 import '../../utils/json_serialization_helpers.dart';
 
 part 'password_settings.g.dart';
 
 /// [PasswordSettings] Clerk object
+@immutable
 @JsonSerializable()
-class PasswordSettings {
+class PasswordSettings with InformativeToStringMixin {
   /// Constructor
   const PasswordSettings({
     this.allowedSpecialCharacters = '',
@@ -74,7 +77,13 @@ class PasswordSettings {
       _$PasswordSettingsFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$PasswordSettingsToJson(this);
+
+  /// is it long enough?
+  bool meetsLengthCriteria(String password) =>
+      password.length >= minLength &&
+      (maxLength == 0 || password.length <= maxLength);
 
   /// does a password meet the lower case criteria?
   bool meetsLowerCaseCriteria(String password) =>
@@ -98,6 +107,7 @@ class PasswordSettings {
 
   /// does a password meet all criteria?
   bool meetsRequiredCriteria(String password) =>
+      meetsLengthCriteria(password) &&
       meetsLowerCaseCriteria(password) &&
       meetsUpperCaseCriteria(password) &&
       meetsNumberCriteria(password) &&

@@ -18,8 +18,8 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
       primaryPhoneNumberId: json['primary_phone_number_id'] as String?,
       primaryWeb3WalletId: json['primary_web3_wallet_id'] as String?,
       publicMetadata: json['public_metadata'] as Map<String, dynamic>?,
-      privateMetadata: json['private_metadata'] as Map<String, dynamic>?,
-      userMetadata: json['unsafe_metadata'] as Map<String, dynamic>?,
+      privateMetadata: json['private_metadata'] as Map<String, dynamic>? ?? {},
+      unsafeMetadata: json['unsafe_metadata'] as Map<String, dynamic>?,
       emailAddresses: (json['email_addresses'] as List<dynamic>?)
           ?.map((e) => Email.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -37,6 +37,7 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
           ?.map(
               (e) => OrganizationMembership.fromJson(e as Map<String, dynamic>))
           .toList(),
+      createOrganizationEnabled: json['create_organization_enabled'] as bool,
       passwordEnabled: json['password_enabled'] as bool?,
       twoFactorEnabled: json['two_factor_enabled'] as bool?,
       totpEnabled: json['totp_enabled'] as bool?,
@@ -55,7 +56,10 @@ User _$UserFromJson(Map<String, dynamic> json) => User(
       createdAt: intToDateTime(json['created_at']),
       lastActiveAt: intToDateTime(json['last_active_at']),
       deleteSelfEnabled: json['delete_self_enabled'] as bool?,
-    );
+    )..currentOrganization = json['current_organization'] == null
+        ? null
+        : OrganizationMembership.fromJson(
+            json['current_organization'] as Map<String, dynamic>);
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'id': instance.id,
@@ -73,8 +77,8 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       if (instance.primaryWeb3WalletId case final value?)
         'primary_web3_wallet_id': value,
       if (instance.publicMetadata case final value?) 'public_metadata': value,
-      if (instance.privateMetadata case final value?) 'private_metadata': value,
-      if (instance.userMetadata case final value?) 'unsafe_metadata': value,
+      'private_metadata': instance.privateMetadata,
+      if (instance.unsafeMetadata case final value?) 'unsafe_metadata': value,
       if (instance.emailAddresses?.map((e) => e.toJson()).toList()
           case final value?)
         'email_addresses': value,
@@ -89,6 +93,7 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       if (instance.organizationMemberships?.map((e) => e.toJson()).toList()
           case final value?)
         'organization_memberships': value,
+      'create_organization_enabled': instance.createOrganizationEnabled,
       if (instance.externalAccounts?.map((e) => e.toJson()).toList()
           case final value?)
         'external_accounts': value,
@@ -110,4 +115,6 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'updated_at': dateTimeToInt(instance.updatedAt),
       'created_at': dateTimeToInt(instance.createdAt),
       'last_active_at': dateTimeToInt(instance.lastActiveAt),
+      if (instance.currentOrganization?.toJson() case final value?)
+        'current_organization': value,
     };

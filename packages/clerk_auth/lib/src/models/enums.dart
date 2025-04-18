@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../../clerk_auth.dart';
@@ -17,88 +18,17 @@ enum SessionTokenPollMode {
 /// [EnrollmentMode] Clerk object
 @JsonEnum(fieldRename: FieldRename.snake, alwaysCreate: true)
 enum EnrollmentMode {
+  /// automatic suggestion
+  automaticSuggestion,
+
+  /// automatic invitation
+  automaticInvitation,
+
   /// manual invitation
   manualInvitation;
 
   @override
   String toString() => _$EnrollmentModeEnumMap[this]!;
-}
-
-/// [Status] Clerk object
-@JsonEnum(fieldRename: FieldRename.snake, alwaysCreate: true)
-enum Status {
-  /// abandoned
-  abandoned,
-
-  /// active
-  active,
-
-  /// missing requirements
-  missingRequirements,
-
-  /// needs identifier
-  needsIdentifier,
-
-  /// needs first factor
-  needsFirstFactor,
-
-  /// needs second factor
-  needsSecondFactor,
-
-  /// transferable
-  transferable,
-
-  /// unverified
-  unverified,
-
-  /// verified
-  verified,
-
-  /// complete
-  complete,
-
-  /// expired
-  expired,
-
-  /// failed
-  failed;
-
-  /// is active?
-  bool get isActive => this == active;
-
-  /// is verified?
-  bool get isVerified => this == verified;
-
-  /// needs factor?
-  bool get needsFactor => this == needsFirstFactor || this == needsSecondFactor;
-
-  @override
-  String toString() => _$StatusEnumMap[this]!;
-}
-
-/// [IdentificationStrategy] Clerk object
-@JsonEnum(fieldRename: FieldRename.snake, alwaysCreate: true)
-enum IdentificationStrategy {
-  /// email address
-  emailAddress,
-
-  /// oauth apple
-  oauthApple,
-
-  /// oauth github
-  oauthGithub,
-
-  /// oauth google
-  oauthGoogle,
-
-  /// phone number
-  phoneNumber,
-
-  /// username
-  username;
-
-  @override
-  String toString() => _$IdentificationStrategyEnumMap[this]!;
 }
 
 /// [UserAttribute] Clerk object
@@ -142,6 +72,10 @@ enum UserAttribute {
 
   @override
   String toString() => _$UserAttributeEnumMap[this]!;
+
+  /// Return the [Field] associated with this [UserAttribute]
+  Field? get relatedField =>
+      Field.values.firstWhereOrNull((f) => f.name == toString());
 }
 
 /// [Stage] Clerk object
@@ -159,8 +93,9 @@ enum Stage {
       Status.needsFirstFactor => first,
       Status.needsSecondFactor => second,
       _ => throw ClerkAuthException(
-          message: 'No Stage for ###',
-          substitution: status.toString(),
+          message: 'No Stage for {arg}',
+          argument: status.toString(),
+          code: AuthErrorCode.noStageForStatus,
         ),
     };
   }

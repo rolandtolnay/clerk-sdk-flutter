@@ -1,13 +1,18 @@
 import 'dart:convert';
+import 'dart:core';
 
-import 'package:clerk_auth/clerk_auth.dart';
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
+
+import '../../../clerk_auth.dart';
 
 part 'session_token.g.dart';
 
 /// [SessionToken] Clerk object
+@immutable
 @JsonSerializable()
-class SessionToken {
+class SessionToken with InformativeToStringMixin {
   /// Constructor
   SessionToken({required this.jwt});
 
@@ -21,7 +26,11 @@ class SessionToken {
 
   late final _parts = switch (jwt.split('.')) {
     List<String> parts when parts.length == 3 => parts,
-    _ => throw ClerkAuthException(message: "JWT poorly formated: $jwt"),
+    _ => throw ClerkAuthException(
+        message: "JWT poorly formated: $jwt",
+        argument: jwt,
+        code: AuthErrorCode.jwtPoorlyFormatted,
+      ),
   };
 
   /// The [header] of the token
@@ -60,5 +69,6 @@ class SessionToken {
       _$SessionTokenFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$SessionTokenToJson(this);
 }

@@ -38,6 +38,12 @@ class TestHttpService implements HttpService {
   final _expectations = <String, List<Response>>{};
 
   @override
+  Future<void> initialise() async {}
+
+  @override
+  void terminate() {}
+
+  @override
   Future<Response> send(
     HttpMethod method,
     Uri uri, {
@@ -67,10 +73,13 @@ class TestHttpService implements HttpService {
   ) {
     final hdrs = {...?headers}
       ..remove(HttpHeaders.acceptHeader)
+      ..remove(HttpHeaders.acceptLanguageHeader)
       ..remove(HttpHeaders.contentTypeHeader)
       ..remove(HttpHeaders.authorizationHeader)
       ..remove('clerk-api-version')
       ..remove('x-flutter-sdk-version')
+      ..remove('x-native-device-id')
+      ..remove('x-clerk-client-id')
       ..remove('x-mobile');
 
     final queryParams = {
@@ -119,4 +128,40 @@ class TestHttpServiceError extends Error {
 
   @override
   String toString() => '$runtimeType: $message';
+}
+
+List<String> testLocalesLookup() => <String>['en'];
+
+const noneHttpService = NoneHttpService();
+
+class NoneHttpService implements HttpService {
+  const NoneHttpService();
+
+  @override
+  Future<void> initialise() async {}
+
+  @override
+  void terminate() {}
+
+  @override
+  Future<Response> send(
+    HttpMethod method,
+    Uri uri, {
+    Map<String, String>? headers,
+    Map<String, dynamic>? params,
+    String? body,
+  }) {
+    return Future.value(Response('', 200));
+  }
+
+  @override
+  Future<Response> sendByteStream(
+    HttpMethod method,
+    Uri uri,
+    ByteStream byteStream,
+    int length,
+    Map<String, String> headers,
+  ) {
+    return Future.value(Response('', 200));
+  }
 }

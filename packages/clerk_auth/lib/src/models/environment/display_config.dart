@@ -1,12 +1,15 @@
 import 'package:clerk_auth/src/models/enums.dart';
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 part 'display_config.g.dart';
 
 /// Display Configuration
 ///
+@immutable
 @JsonSerializable()
-class DisplayConfig {
+class DisplayConfig with InformativeToStringMixin {
   /// Constructs an instance of [DisplayConfig]
   const DisplayConfig({
     this.id = '',
@@ -159,5 +162,6 @@ class DisplayConfig {
       _$DisplayConfigFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$DisplayConfigToJson(this);
 }

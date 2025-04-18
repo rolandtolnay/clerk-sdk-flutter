@@ -24,13 +24,27 @@ class ClerkTextStyle {
   /// The Clerk-branded text style for button titles.
   static const buttonTitle = TextStyle(
     fontSize: 12.0,
-    color: ClerkColors.stormGrey,
+    color: ClerkColors.charcoalGrey,
+  );
+
+  /// The Clerk-branded text style for user's name.
+  static const buttonTitleDark = TextStyle(
+    fontSize: 12.0,
+    color: ClerkColors.almostBlack,
   );
 
   /// The Clerk-branded text style for button subtitles.
   static const buttonSubtitle = TextStyle(
     fontSize: 10.0,
     color: ClerkColors.midGrey,
+  );
+
+  /// The Clerk-branded text style for avatar initials.
+  static const avatar = TextStyle(
+    fontSize: 14.0,
+    color: ClerkColors.whiteSmoke,
+    letterSpacing: 1,
+    height: 1.2,
   );
 
   /// The Clerk-branded text style for subheadings in the user profile widget.
@@ -44,7 +58,7 @@ class ClerkTextStyle {
     fontSize: 14.0,
     color: ClerkColors.darkJungleGreen,
     letterSpacing: 0.1,
-    height: 0.95,
+    height: 1.2,
   );
 
   /// The Clerk-branded text style for user button titles.

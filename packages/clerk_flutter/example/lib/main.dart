@@ -2,13 +2,17 @@ import 'dart:async';
 import 'dart:core';
 import 'dart:io';
 
-import 'package:clerk_auth/clerk_auth.dart';
+import 'package:clerk_auth/clerk_auth.dart' as clerk;
 import 'package:clerk_flutter/clerk_flutter.dart';
+import 'package:clerk_flutter_example/pages/clerk_sign_in_example.dart';
+import 'package:clerk_flutter_example/pages/custom_email_sign_in_example.dart';
+import 'package:clerk_flutter_example/pages/custom_sign_in_example.dart';
+import 'package:clerk_flutter_example/pages/examples_list.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {
-  await setUpLogging(printer: const LogPrinter());
+  await clerk.setUpLogging(printer: const LogPrinter());
 
   const publishableKey = String.fromEnvironment('publishable_key');
   if (publishableKey.isEmpty) {
@@ -31,10 +35,7 @@ Future<void> main() async {
 /// Example App
 class ExampleApp extends StatelessWidget {
   /// Constructs an instance of Example App
-  const ExampleApp({
-    super.key,
-    required this.publishableKey,
-  });
+  const ExampleApp({super.key, required this.publishableKey});
 
   /// Publishable Key
   final String publishableKey;
@@ -42,36 +43,26 @@ class ExampleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClerkAuth(
-      publishableKey: publishableKey,
-      pollMode: SessionTokenPollMode.hungry,
+      config: ClerkAuthConfig(publishableKey: publishableKey),
       child: MaterialApp(
+        theme: ThemeData.light(),
         debugShowCheckedModeBanner: false,
-        builder: (BuildContext context, Widget? child) {
-          return ClerkErrorListener(child: child!);
+        initialRoute: ExamplesList.path,
+        routes: {
+          ExamplesList.path: (context) => const ExamplesList(),
+          ClerkSignInExample.path: (context) => const ClerkSignInExample(),
+          CustomOAuthSignInExample.path: (context) =>
+              const CustomOAuthSignInExample(),
+          CustomEmailSignInExample.path: (context) =>
+              const CustomEmailSignInExample(),
         },
-        home: Scaffold(
-          backgroundColor: ClerkColors.whiteSmoke,
-          body: SafeArea(
-            child: Padding(
-              padding: horizontalPadding32,
-              child: Center(
-                child: ClerkAuthBuilder(
-                  signedInBuilder: (context, auth) => const ClerkUserButton(),
-                  signedOutBuilder: (context, auth) {
-                    return const ClerkAuthenticationWidget();
-                  },
-                ),
-              ),
-            ),
-          ),
-        ),
       ),
     );
   }
 }
 
 /// Log Printer
-class LogPrinter extends Printer {
+class LogPrinter extends clerk.Printer {
   /// Constructs an instance of [LogPrinter]
   const LogPrinter();
 

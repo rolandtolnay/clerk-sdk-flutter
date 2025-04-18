@@ -1,4 +1,7 @@
 import 'package:clerk_flutter/clerk_flutter.dart';
+import 'package:clerk_flutter/src/widgets/ui/common.dart';
+import 'package:clerk_flutter/src/widgets/ui/style/colors.dart';
+import 'package:clerk_flutter/src/widgets/ui/style/text_style.dart';
 import 'package:flutter/material.dart';
 
 /// A reusable divider with the text 'or' in the middle. Meant to divide vertical content.
@@ -10,13 +13,13 @@ class OrDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final translator = ClerkAuth.translatorOf(context);
+    final localizations = ClerkAuth.localizationsOf(context);
     return Row(
       children: [
         const Expanded(child: Divider(color: ClerkColors.whiteSmoke)),
         horizontalMargin24,
         Text(
-          translator.translate('or'),
+          localizations.or,
           style: ClerkTextStyle.subtitle.copyWith(fontSize: 12.0),
         ),
         horizontalMargin24,

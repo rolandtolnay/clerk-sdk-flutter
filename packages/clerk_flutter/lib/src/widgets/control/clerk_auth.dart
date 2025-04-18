@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:clerk_auth/clerk_auth.dart' as clerk;
 import 'package:clerk_flutter/clerk_flutter.dart';
+import 'package:clerk_flutter/src/widgets/ui/clerk_overlay_host.dart';
+import 'package:clerk_flutter/src/widgets/ui/common.dart';
 import 'package:flutter/material.dart';
 
 /// Control widget initialising Clerk Auth system
@@ -9,40 +11,34 @@ class ClerkAuth extends StatefulWidget {
   /// Construct a [ClerkAuth]
   const ClerkAuth({
     super.key,
-    this.publishableKey,
-    this.pollMode = clerk.SessionTokenPollMode.lazy,
-    this.authState,
-    this.translator = const DefaultClerkTranslator(),
-    this.persistor,
-    this.loading,
-    this.httpService,
     required this.child,
-  }) : assert(
-          (publishableKey is String) != (authState is ClerkAuthState),
-          'Either [publishableKey] or an [authState] instance must '
-          'be provided, but not both',
-        );
+    ClerkAuthConfig? config,
+    this.authState,
+  })  : assert(
+          (config == null) != (authState == null),
+          'Requires one and only one of `authState` or `config`',
+        ),
+        _config = config;
 
-  /// Clerk publishable key from dashboard
-  final String? publishableKey;
+  /// Constructor to use when using [MaterialApp] for your project.
+  static TransitionBuilder materialAppBuilder({
+    required ClerkAuthConfig config,
+  }) {
+    return (BuildContext context, Widget? child) {
+      return ClerkAuth(
+        config: config,
+        child: ClerkErrorListener(child: child!),
+      );
+    };
+  }
+
+  /// The [ClerkAuthConfig] object
+  ClerkAuthConfig get config => _config ?? authState!.config;
+
+  final ClerkAuthConfig? _config;
 
   /// auth instance from elsewhere
   final ClerkAuthState? authState;
-
-  /// Persistence service for caching tokens
-  final clerk.Persistor? persistor;
-
-  /// Injectable translations for strings
-  final ClerkTranslator translator;
-
-  /// Poll mode: should we regularly poll for session token?
-  final clerk.SessionTokenPollMode pollMode;
-
-  /// Loading widget
-  final Widget? loading;
-
-  /// The [HttpService]
-  final clerk.HttpService? httpService;
 
   /// child widget tree
   final Widget child;
@@ -76,8 +72,8 @@ class ClerkAuth extends StatefulWidget {
   }
 
   /// Get the [ClerkTranslator]
-  static ClerkTranslator translatorOf(BuildContext context) =>
-      of(context, listen: false).translator;
+  static ClerkSdkLocalizations localizationsOf(BuildContext context) =>
+      of(context, listen: false).localizationsOf(context);
 
   /// Get the [clerk.DisplayConfig]
   static clerk.DisplayConfig displayConfigOf(BuildContext context) =>
@@ -97,15 +93,15 @@ class _ClerkAuthState extends State<ClerkAuth> {
   void initState() {
     super.initState();
     if (widget.authState == null) {
-      ClerkAuthState.create(
-        publishableKey: widget.publishableKey!,
-        persistor: widget.persistor,
-        translator: widget.translator,
-        loading: widget.loading,
-        pollMode: widget.pollMode,
-      ).then((authState) {
+      if (widget.config.loading == null) {
+        WidgetsBinding.instance.deferFirstFrame();
+      }
+      ClerkAuthState.create(config: widget.config).then((authState) {
         if (mounted) {
           setState(() => _clerkAuthState = authState);
+        }
+        if (widget.config.loading == null) {
+          WidgetsBinding.instance.allowFirstFrame();
         }
       });
     }
@@ -125,13 +121,14 @@ class _ClerkAuthState extends State<ClerkAuth> {
         builder: (BuildContext context, Widget? child) {
           return _ClerkAuthData(
             authState: authState,
-            child: widget.child,
+            child: ClerkOverlayHost(
+              child: widget.child,
+            ),
           );
         },
       );
     }
-
-    return widget.loading ?? emptyWidget;
+    return widget.config.loading ?? emptyWidget;
   }
 }
 

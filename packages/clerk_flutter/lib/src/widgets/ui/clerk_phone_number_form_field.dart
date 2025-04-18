@@ -1,4 +1,7 @@
-import 'package:clerk_flutter/clerk_flutter.dart';
+import 'package:clerk_flutter/src/widgets/ui/common.dart';
+import 'package:clerk_flutter/src/widgets/ui/input_label.dart';
+import 'package:clerk_flutter/src/widgets/ui/style/colors.dart';
+import 'package:clerk_flutter/src/widgets/ui/style/text_style.dart';
 import 'package:flutter/material.dart';
 import 'package:phone_input/phone_input_package.dart';
 
@@ -11,7 +14,8 @@ class ClerkPhoneNumberFormField extends StatelessWidget {
     required this.onChanged,
     this.onSubmit,
     this.label,
-    this.optional = false,
+    this.isOptional = false,
+    this.isMissing = false,
     this.initial,
     this.defaultCountry = IsoCode.US,
   });
@@ -26,7 +30,10 @@ class ClerkPhoneNumberFormField extends StatelessWidget {
   final String? label;
 
   /// Is this field optional?
-  final bool optional;
+  final bool isOptional;
+
+  /// Do we need to mark this field as required?
+  final bool isMissing;
 
   /// initial value
   final String? initial;
@@ -36,36 +43,11 @@ class ClerkPhoneNumberFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final translator = ClerkAuth.translatorOf(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          children: [
-            if (label case String label) //
-              FittedBox(
-                fit: BoxFit.fitWidth,
-                child: Text(
-                  translator.translate(label),
-                  textAlign: TextAlign.start,
-                  maxLines: 2,
-                  style: ClerkTextStyle.inputLabel,
-                ),
-              ),
-            spacer,
-            if (optional)
-              Text(
-                translator.translate('Optional'),
-                textAlign: TextAlign.end,
-                maxLines: 1,
-                style: ClerkTextStyle.inputLabel.copyWith(
-                  color: ClerkColors.stormGrey,
-                  fontSize: 12.0,
-                ),
-              ),
-          ],
-        ),
+        InputLabel(label: label, isRequired: isMissing, isOptional: isOptional),
         verticalMargin4,
         DecoratedBox(
           decoration: inputBoxBorderDecoration,
@@ -99,21 +81,25 @@ class _PhoneInput extends StatefulWidget {
 }
 
 class _PhoneInputState extends State<_PhoneInput> {
-  bool _isValid = false;
+  late final _phoneNumber =
+      widget.initial is String ? PhoneNumber.parse(widget.initial!) : null;
+  late bool _isValid = _phoneNumber?.isValid() == true;
 
   @override
   Widget build(BuildContext context) {
     return PhoneInput(
-      initialValue:
-          widget.initial is String ? PhoneNumber.parse(widget.initial!) : null,
+      initialValue: _phoneNumber,
       defaultCountry: widget.defaultCountry,
+      autovalidateMode: AutovalidateMode.always,
       showFlagInInput: true,
       flagSize: 16,
       onChanged: (phoneNumber) {
         if (phoneNumber case PhoneNumber phoneNumber) {
           final valid = phoneNumber.isValid();
           if (valid != _isValid) setState(() => _isValid = valid);
-          widget.onChanged(phoneNumber.intlFormattedNsn);
+          if (valid) {
+            widget.onChanged(phoneNumber.intlFormattedNsn);
+          }
         }
       },
       onSubmitted: widget.onSubmit,

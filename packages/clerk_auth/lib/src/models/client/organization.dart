@@ -1,14 +1,17 @@
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:clerk_auth/src/utils/extensions.dart';
 import 'package:clerk_auth/src/utils/json_serialization_helpers.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 part 'organization.g.dart';
 
 /// [Organization] Clerk object
+@immutable
 @JsonSerializable()
-class Organization {
+class Organization with InformativeToStringMixin {
   /// Constructor
-  Organization({
+  const Organization({
     this.id = '',
     this.name = '',
     this.maxAllowedMemberships = 0,
@@ -70,13 +73,17 @@ class Organization {
 
   static const _personalOrgId = r'$PERSONAL$';
 
-  /// The id used internally for the personal organization
-  static final personal = Organization(id: _personalOrgId);
+  /// A dummy personal [Organization] used internally
+  static const personal = Organization(id: _personalOrgId);
 
   /// fromJson
   static Organization fromJson(Map<String, dynamic> json) =>
       _$OrganizationFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$OrganizationToJson(this);
+
+  /// Do we have unlimited membership?
+  bool get hasUnlimitedMembership => maxAllowedMemberships == 0;
 }

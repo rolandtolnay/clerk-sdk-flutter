@@ -1,12 +1,15 @@
 import 'package:clerk_auth/clerk_auth.dart';
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:clerk_auth/src/utils/json_serialization_helpers.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 part 'sign_in.g.dart';
 
 /// [SignIn] Clerk object
+@immutable
 @JsonSerializable()
-class SignIn {
+class SignIn with InformativeToStringMixin {
   /// Constructor
   const SignIn({
     required this.id,
@@ -62,6 +65,7 @@ class SignIn {
   static SignIn fromJson(Map<String, dynamic> json) => _$SignInFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$SignInToJson(this);
 
   /// Find a [Verification] if one exists for this [SignIn]
@@ -87,8 +91,19 @@ class SignIn {
     for (final factor in factors) {
       if (factor.strategy == strategy) return factor;
     }
-    throw ClerkAuthException(
-      message: 'Strategy $strategy unsupported for $stage factor',
-    );
+    switch (stage) {
+      case Stage.first:
+        throw ClerkAuthException(
+          message: 'Strategy $strategy unsupported for $stage factor',
+          argument: strategy.toString(),
+          code: AuthErrorCode.noSuchFirstFactorStrategy,
+        );
+      case Stage.second:
+        throw ClerkAuthException(
+          message: 'Strategy $strategy unsupported for $stage factor',
+          argument: strategy.toString(),
+          code: AuthErrorCode.noSuchSecondFactorStrategy,
+        );
+    }
   }
 }

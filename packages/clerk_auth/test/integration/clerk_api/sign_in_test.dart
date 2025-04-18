@@ -1,11 +1,10 @@
 import 'package:clerk_auth/src/clerk_api/api.dart';
+import 'package:clerk_auth/src/clerk_auth/auth_config.dart';
 import 'package:clerk_auth/src/clerk_auth/persistor.dart';
 import 'package:clerk_auth/src/models/api/api_response.dart';
-import 'package:clerk_auth/src/models/client/sign_in.dart';
-import 'package:clerk_auth/src/models/client/strategy.dart';
-import 'package:clerk_auth/src/models/enums.dart';
+import 'package:clerk_auth/src/models/models.dart';
 import 'package:clerk_auth/src/utils/logging.dart';
-import 'package:logging/logging.dart';
+
 import 'package:test/test.dart';
 
 import '../../test_helpers.dart';
@@ -21,11 +20,14 @@ void main() {
   setUpAll(() async {
     env = TestEnv('.env.test');
     api = Api(
-      publishableKey: env.publishableKey,
+      config: AuthConfig(
+        publishableKey: env.publishableKey,
+        localesLookup: testLocalesLookup,
+      ),
       persistor: Persistor.none,
       httpService: httpService,
-      pollMode: SessionTokenPollMode.lazy,
     );
+    await api.initialize();
     await setUpLogging(printer: TestLogPrinter(), level: Level.SEVERE);
   });
 

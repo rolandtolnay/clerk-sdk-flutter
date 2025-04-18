@@ -1,10 +1,13 @@
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 part 'user_public.g.dart';
 
 /// [UserPublic] Clerk object
+@immutable
 @JsonSerializable()
-class UserPublic {
+class UserPublic with InformativeToStringMixin {
   /// Constructor
   const UserPublic({
     required this.identifier,
@@ -39,5 +42,6 @@ class UserPublic {
       _$UserPublicFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$UserPublicToJson(this);
 }

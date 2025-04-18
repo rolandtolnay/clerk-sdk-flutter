@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:core';
 import 'dart:io';
 
 import 'package:clerk_auth/src/clerk_api/api.dart';
@@ -10,61 +11,60 @@ export 'clerk_auth_exception.dart';
 export 'http_service.dart';
 export 'persistor.dart';
 
-/// [Auth] provides more abstracted access to the Clerk API
+/// [Auth] provides more abstracted access to the Clerk API.
 ///
-/// Requires a [publishableKey] found in the Clerk dashboard
-/// for you account. Additional arguments:
+/// [config]: SDK Configuration containing your publishable key.
 ///
-/// [persistor]: an optional instance of a [Persistor] which will keep track of
-/// tokens and expiry between app activations
+/// [persistor]: an instance of a [Persistor] which will keep track of
+/// tokens and expiry etc between app activations
 ///
-/// [client]: an optional instance of [HttpService] to manage low-level communications
-/// with the back end. Injected for e.g. test mocking
-///
-/// [pollMode]: session token poll mode, default on-demand,
-/// manages how to refresh the [sessionTokenFor].
+/// [httpService]: an instance of [HttpService] to manage low-level
+/// communications with the back end. Injected for e.g. test mocking
 ///
 class Auth {
   /// Create an [Auth] object using appropriate Clerk credentials
-  ///
-  /// [Auth] takes the following parameters:
-  ///
-  /// [publishableKey]: unique string from the Clerk dashboard
-  /// [persistor]: a [Persistor] with which to persist required data across
-  /// app sessions
-  /// [sendTelemetryData]; a [bool], default [true], with which to manage the sending
-  /// of telemetric data to the Clerk back end
-  /// [httpService]: the service through which http requests are made
-  /// [pollMode]: the mode by which session tokens are polled from the back
-  /// end: [SessionTokenPollMode.hungry] or (default) [SessionTokenPollMode.lazy]
   Auth({
-    required String publishableKey,
+    required this.config,
     required Persistor persistor,
-    bool sendTelemetryData = true,
-    HttpService httpService = const DefaultHttpService(),
-    SessionTokenPollMode pollMode = SessionTokenPollMode.lazy,
-  })  : telemetry = Telemetry(
-          publishableKey: publishableKey,
-          persistor: persistor,
-          httpService: httpService,
-          sendTelemetryData: sendTelemetryData,
-        ),
-        _api = Api(
-          publishableKey: publishableKey,
-          persistor: persistor,
-          httpService: httpService,
-          pollMode: pollMode,
-        );
+    HttpService? httpService,
+  }) {
+    this.httpService = httpService ?? DefaultHttpService();
+    telemetry = Telemetry(
+      config: config,
+      persistor: persistor,
+      httpService: this.httpService,
+    );
+    _api = Api(
+      config: config,
+      persistor: persistor,
+      httpService: this.httpService,
+    );
+  }
+
+  /// Use 'English' as the default locale
+  static List<String> defaultLocalesLookup() => <String>['en'];
+
+  /// The configuration object
+  final AuthConfig config;
+
+  /// The [HttpService] used to communicate with the backend.
+  late final HttpService httpService;
 
   /// The service to send telemetry to the back end
-  final Telemetry telemetry;
+  late final Telemetry telemetry;
 
-  final Api _api;
+  late final Api _api;
+  Timer? _clientTimer;
 
   static const _codeLength = 6;
 
-  /// default redirect URL for use with oAuth
-  static const oauthRedirect = 'https://www.clerk.com/oauth-redirect';
+  final _errors = StreamController<ClerkAuthException>.broadcast();
+
+  /// Stream of errors reported by the SDK of type [AuthError]
+  Stream<ClerkAuthException> get errorStream => _errors.stream;
+
+  /// Adds [error] to [errorStream]
+  void addError(ClerkAuthException error) => _errors.add(error);
 
   /// The [Environment] object
   ///
@@ -90,6 +90,9 @@ class Auth {
   /// The current [User] object, or null
   User? get user => session?.user;
 
+  /// Are we currently signed in?
+  bool get isSignedIn => user != null;
+
   /// Are we currently signing in?
   bool get isSigningIn => signIn?.status.isActive == true;
 
@@ -108,6 +111,7 @@ class Auth {
   /// object is made
   ///
   Future<void> initialize() async {
+    await httpService.initialise();
     await _api.initialize();
     final [client, env] = await Future.wait([
       _api.createClient(),
@@ -118,6 +122,12 @@ class Auth {
     await telemetry.initialize(
       instanceType: this.env.display.instanceEnvironmentType,
     );
+    if (config.clientRefreshPeriod.isNotZero) {
+      _clientTimer = Timer.periodic(
+        config.clientRefreshPeriod,
+        (_) => refreshClient(),
+      );
+    }
   }
 
   /// Disposal of the [Auth] object
@@ -126,8 +136,10 @@ class Auth {
   /// method, if that is mixed in e.g. in clerk_flutter
   ///
   void terminate() {
-    telemetry.terminate();
+    _clientTimer?.cancel();
     _api.terminate();
+    telemetry.terminate();
+    httpService.terminate();
   }
 
   /// Refresh the current [Client]
@@ -137,8 +149,22 @@ class Auth {
     update();
   }
 
+  /// Refresh the current [Environment]
+  ///
+  Future<void> refreshEnvironment() async {
+    env = await _api.environment();
+    update();
+  }
+
   ApiResponse _housekeeping(ApiResponse resp) {
-    if (resp.client case Client client when resp.isOkay) {
+    if (resp.isError) {
+      addError(
+        ClerkAuthException(
+          code: AuthErrorCode.serverErrorResponse,
+          message: resp.errorMessage,
+        ),
+      );
+    } else if (resp.client case Client client) {
       this.client = client;
     } else {
       throw ClerkAuthException(
@@ -177,7 +203,10 @@ class Auth {
         : null;
     final token = await _api.sessionToken(org, templateName);
     if (token is! SessionToken) {
-      throw ClerkAuthException(message: 'No session token retrieved');
+      throw ClerkAuthException(
+        message: 'No session token retrieved',
+        code: AuthErrorCode.noSessionTokenRetrieved,
+      );
     }
     return token;
   }
@@ -186,7 +215,10 @@ class Auth {
   ///
   Future<void> oauthSignIn({required Strategy strategy}) async {
     await _api
-        .createSignIn(strategy: strategy, redirectUrl: oauthRedirect)
+        .createSignIn(
+          strategy: strategy,
+          redirectUrl: ClerkConstants.oauthRedirect,
+        )
         .then(_housekeeping);
     if (client.signIn case SignIn signIn) {
       await _api
@@ -194,7 +226,7 @@ class Auth {
             signIn,
             stage: Stage.first,
             strategy: strategy,
-            redirectUrl: oauthRedirect,
+            redirectUrl: ClerkConstants.oauthRedirect,
           )
           .then(_housekeeping);
     }
@@ -205,8 +237,17 @@ class Auth {
   ///
   Future<void> oauthConnect({required Strategy strategy}) async {
     await _api
-        .connectAccount(strategy: strategy, redirectUrl: oauthRedirect)
+        .addExternalAccount(
+          strategy: strategy,
+          redirectUrl: ClerkConstants.oauthRedirect,
+        )
         .then(_housekeeping);
+    update();
+  }
+
+  /// Delete an external account
+  Future<void> deleteExternalAccount({required ExternalAccount account}) async {
+    await _api.deleteExternalAccount(account: account).then(_housekeeping);
     update();
   }
 
@@ -215,7 +256,7 @@ class Auth {
   /// Can be repeatedly called with updated parameters
   /// until the user is signed in.
   ///
-  Future<Client> attemptSignIn({
+  Future<void> attemptSignIn({
     required Strategy strategy,
     String? identifier,
     String? password,
@@ -223,16 +264,28 @@ class Auth {
     String? token,
     String? redirectUrl,
   }) async {
-    if (client.signIn == null && identifier is String) {
-      // if a password has been presented, we can immediately attempt a sign in
-      // if `password` is null it will be ignored
+    if (client.signIn == null) {
+      // if password and identifier been presented, we can immediately attempt
+      // a sign in;  if null they will be ignored
       await _api
           .createSignIn(identifier: identifier, password: password)
           .then(_housekeeping);
     }
 
     switch (client.signIn) {
-      case SignIn signIn when strategy.isOauth == true && token is String:
+      case null when client.user is User:
+        // We have signed in - possibly when creating the [SignIn] above
+        break;
+
+      case SignIn signIn
+          when signIn.status == Status.needsIdentifier && identifier is String:
+        // if a password has been presented, we can immediately attempt a
+        // sign in; if `password` is null it will be ignored
+        await _api
+            .createSignIn(identifier: identifier, password: password)
+            .then(_housekeeping);
+
+      case SignIn signIn when strategy.isOauth && token is String:
         await _api
             .sendOauthToken(signIn, strategy: strategy, token: token)
             .then(_housekeeping);
@@ -248,13 +301,13 @@ class Auth {
             )
             .then(_housekeeping);
 
-        final signInCompleter = Completer<Client>();
+        final signInCompleter = Completer<void>();
 
         unawaited(
           _pollForCompletion().then(
             (client) {
               this.client = client;
-              signInCompleter.complete(client);
+              signInCompleter.complete();
               update();
             },
           ),
@@ -276,7 +329,7 @@ class Auth {
             .then(_housekeeping);
 
       case SignIn signIn
-          when signIn.status.needsFactor && strategy.requiresCode == true:
+          when signIn.status.needsFactor && strategy.requiresCode:
         final stage = Stage.forStatus(signIn.status);
         if (signIn.verificationFor(stage) is! Verification) {
           await _api
@@ -300,10 +353,20 @@ class Auth {
         await _api
             .attemptSignIn(signIn, stage: stage, strategy: strategy, code: code)
             .then(_housekeeping);
+
+      // No matching sign-in sequence, reset loading state
+      default:
+        final status = signIn?.status ?? Status.unknown;
+        addError(
+          ClerkAuthException(
+            code: AuthErrorCode.signInError,
+            message: 'Unsupported sign in attempt: {arg}',
+            argument: status.name,
+          ),
+        );
     }
 
     update();
-    return client;
   }
 
   /// Resends a verification code for the current sign in or sign up attempt
@@ -355,28 +418,47 @@ class Auth {
   }) async {
     if (password != passwordConfirmation) {
       throw ClerkAuthException(
-          message: "Password and password confirmation must match");
+        message: "Password and password confirmation must match",
+        code: AuthErrorCode.passwordMatchError,
+      );
     }
 
-    if (client.signUp == null) {
-      await _api
-          .createSignUp(
-            strategy: strategy,
-            firstName: firstName,
-            lastName: lastName,
-            username: username,
-            emailAddress: emailAddress,
-            phoneNumber: phoneNumber,
-            password: password,
-            code: code,
-            token: token,
-          )
-          .then(_housekeeping);
+    switch (client.signUp) {
+      case null:
+        await _api
+            .createSignUp(
+              strategy: strategy,
+              firstName: firstName,
+              lastName: lastName,
+              username: username,
+              emailAddress: emailAddress,
+              phoneNumber: phoneNumber,
+              password: password,
+              code: code,
+              token: token,
+            )
+            .then(_housekeeping);
+
+      case SignUp signUp when signUp.missingFields.isNotEmpty:
+        await _api
+            .updateSignUp(
+              signUp,
+              strategy: strategy,
+              firstName: firstName,
+              lastName: lastName,
+              username: username,
+              emailAddress: emailAddress,
+              phoneNumber: phoneNumber,
+              password: password,
+              code: code,
+              token: token,
+            )
+            .then(_housekeeping);
     }
 
     if (client.user is! User) {
       switch (client.signUp) {
-        case SignUp signUp when strategy.requiresCode == true && code is String:
+        case SignUp signUp when strategy.requiresCode && code is String:
           await _api
               .attemptSignUp(signUp, strategy: strategy, code: code)
               .then(_housekeeping);
@@ -401,22 +483,6 @@ class Auth {
               .attemptSignUp(signUp,
                   strategy: strategy, code: code, signature: signature)
               .then(_housekeeping);
-
-        case SignUp signUp when signUp.status == Status.missingRequirements:
-          await _api
-              .updateSignUp(
-                signUp,
-                strategy: strategy,
-                firstName: firstName,
-                lastName: lastName,
-                username: username,
-                emailAddress: emailAddress,
-                phoneNumber: phoneNumber,
-                password: password,
-                code: code,
-                token: token,
-              )
-              .then(_housekeeping);
       }
     }
 
@@ -429,6 +495,153 @@ class Auth {
   Future<void> signOutOf(Session session) async {
     await _api.signOutOf(session).then(_housekeeping);
     update();
+  }
+
+  /// Create a new [Organization]
+  ///
+  Future<void> createOrganization({
+    required String name,
+    String? slug,
+    File? logo,
+  }) async {
+    await _api.createOrganization(name).then(_housekeeping);
+
+    if (user?.organizationNamed(name) case Organization org) {
+      if (slug?.isNotEmpty == true) {
+        await _api
+            .updateOrganization(org, slug: slug, session: session)
+            .then(_housekeeping);
+      }
+      if (logo case File logo) {
+        await _api
+            .updateOrganizationLogo(org, logo: logo, session: session)
+            .then(_housekeeping);
+      }
+    }
+
+    update();
+  }
+
+  /// Update an [Organization]
+  ///
+  Future<void> updateOrganization({
+    required Organization organization,
+    String? name,
+    File? logo,
+  }) async {
+    final hasName =
+        name is String && name.isNotEmpty && name != organization.name;
+    if (hasName || logo is File) {
+      if (hasName) {
+        await _api
+            .updateOrganization(organization, name: name, session: session)
+            .then(_housekeeping);
+      }
+      if (logo case File logo) {
+        await _api
+            .updateOrganizationLogo(organization, logo: logo, session: session)
+            .then(_housekeeping);
+      }
+      update();
+    }
+  }
+
+  /// Leave an [Organization]
+  ///
+  Future<bool> leaveOrganization({
+    required Organization organization,
+    Session? session,
+  }) async {
+    final result = await _api
+        .leaveOrganization(organization, session: session)
+        .then(_housekeeping);
+    update();
+    return result.isOkay;
+  }
+
+  static const _page = 20;
+
+  /// Get all the [Organization] invitations awaiting the user
+  ///
+  Future<List<OrganizationInvitation>> fetchOrganizationInvitations() async {
+    final invitations = <OrganizationInvitation>[];
+
+    for (int offset = 0; true; offset += _page) {
+      final response = await _api.fetchOrganizationInvitations(offset, _page);
+      if (response.response?['data'] == null) {
+        break;
+      }
+
+      final responseInvitations = response.response?['data'] as List<dynamic>;
+      invitations.addAll(
+        responseInvitations.map(OrganizationInvitation.fromJson),
+      );
+
+      if (responseInvitations.length < _page) {
+        break;
+      }
+    }
+
+    update();
+    return invitations;
+  }
+
+  /// Get all the [Organization]'s [Domain]s
+  ///
+  Future<List<OrganizationDomain>> fetchOrganizationDomains({
+    required Organization organization,
+  }) async {
+    final domains = <OrganizationDomain>[];
+
+    for (int offset = 0; true; offset += _page) {
+      final response = await _api.fetchOrganizationDomains(
+        organization,
+        offset,
+        _page,
+      );
+      if (response.response?['data'] == null) {
+        break;
+      }
+
+      final responseDomains = response.response?['data'] as List<dynamic>;
+      domains.addAll(
+        responseDomains.map(OrganizationDomain.fromJson),
+      );
+
+      if (responseDomains.length < _page) {
+        break;
+      }
+    }
+
+    update();
+    return domains;
+  }
+
+  /// Accept an invitation to join an [Organization]
+  ///
+  Future<ApiResponse> acceptOrganizationInvitation(
+    OrganizationInvitation invitation,
+  ) async {
+    return await _api
+        .acceptOrganizationInvitation(invitation)
+        .then(_housekeeping);
+  }
+
+  /// Create a new [Domain] within an [Organization]
+  ///
+  Future<void> createDomain({
+    required Organization organization,
+    required String name,
+    required EnrollmentMode mode,
+  }) async {
+    final response =
+        await _api.createDomain(organization, name).then(_housekeeping);
+    if (mode != EnrollmentMode.manualInvitation) {
+      final domainId = response.response!['id'];
+      await _api
+          .updateDomainEnrollmentMode(organization, domainId, mode)
+          .then(_housekeeping);
+    }
   }
 
   /// Activate the given [Session]
@@ -445,16 +658,28 @@ class Auth {
     String? firstName,
     String? lastName,
     Map<String, dynamic>? metadata,
+    File? avatar,
   }) async {
     if (user case User user) {
-      final newUser = user.copyWith(
-        username: username,
-        firstName: firstName,
-        lastName: lastName,
-        userMetadata: metadata,
-      );
-      await _api.updateUser(newUser, env.config).then(_housekeeping);
-      update();
+      final needsUpdate = username != user.username ||
+          firstName != user.username ||
+          lastName != user.lastName ||
+          metadata?.isNotEmpty == true;
+      if (needsUpdate || avatar is File) {
+        if (needsUpdate) {
+          final newUser = user.copyWith(
+            username: username,
+            firstName: firstName,
+            lastName: lastName,
+            unsafeMetadata: metadata,
+          );
+          await _api.updateUser(newUser, env.config).then(_housekeeping);
+        }
+        if (avatar case File avatar) {
+          await _api.updateAvatar(avatar).then(_housekeeping);
+        }
+        update();
+      }
     }
   }
 
@@ -476,10 +701,10 @@ class Auth {
   /// Attempt to verify some [UserIdentifyingData]
   ///
   Future<void> verifyIdentifyingData(
-    UserIdentifyingData ident,
+    UserIdentifyingData uid,
     String code,
   ) async {
-    await _api.verifyIdentifyingData(ident, code).then(_housekeeping);
+    await _api.verifyIdentifyingData(uid, code).then(_housekeeping);
     update();
   }
 
@@ -524,6 +749,7 @@ class Auth {
       if (expiry?.isAfter(DateTime.timestamp()) != true) {
         throw ClerkAuthException(
           message: 'Awaited user action not completed in required timeframe',
+          code: AuthErrorCode.actionNotTimely,
         );
       }
 

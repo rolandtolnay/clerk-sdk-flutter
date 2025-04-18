@@ -1,12 +1,15 @@
 import 'package:clerk_auth/src/models/client/verification.dart';
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:clerk_auth/src/utils/json_serialization_helpers.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 part 'external_account.g.dart';
 
 /// [ExternalAccount] Clerk object
+@immutable
 @JsonSerializable()
-class ExternalAccount {
+class ExternalAccount with InformativeToStringMixin {
   /// Constructor
   const ExternalAccount({
     required this.id,
@@ -76,10 +79,17 @@ class ExternalAccount {
   /// is verified?
   bool get isVerified => verification.status.isVerified;
 
+  /// is in error?
+  bool get isInError => verification.errorMessage is String;
+
+  /// is expired?
+  bool get isExpired => verification.status.isExpired;
+
   /// fromJson
   static ExternalAccount fromJson(Map<String, dynamic> json) =>
       _$ExternalAccountFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$ExternalAccountToJson(this);
 }

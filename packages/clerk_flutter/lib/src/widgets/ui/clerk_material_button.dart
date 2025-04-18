@@ -1,4 +1,4 @@
-import 'package:clerk_flutter/src/widgets/common.dart';
+import 'package:clerk_flutter/src/widgets/ui/common.dart';
 import 'package:clerk_flutter/src/widgets/ui/style/colors.dart';
 import 'package:flutter/material.dart';
 
@@ -48,8 +48,8 @@ class ClerkMaterialButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dark = style == ClerkMaterialButtonStyle.dark;
-    final color = dark ? Colors.transparent : ClerkColors.white;
-    final textColor = dark ? ClerkColors.white : ClerkColors.nobel;
+    final color = dark ? ClerkColors.charcoalGrey : ClerkColors.white;
+    final textColor = dark ? ClerkColors.white : ClerkColors.stormGrey;
     final child = DefaultTextStyle(
       style: TextStyle(
         color: textColor,
@@ -60,11 +60,9 @@ class ClerkMaterialButton extends StatelessWidget {
       ),
       child: IconTheme(
         data: IconThemeData(color: textColor, size: 16.0),
-        child: Center(
-          child: Padding(
-            padding: horizontalPadding12,
-            child: label,
-          ),
+        child: Padding(
+          padding: horizontalPadding4,
+          child: label,
         ),
       ),
     );
@@ -84,19 +82,7 @@ class ClerkMaterialButton extends StatelessWidget {
             ),
           ),
         ),
-        child: dark
-            ? Ink(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [ClerkColors.charcoalGrey, ClerkColors.gunmetal],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: borderRadius8,
-                ),
-                child: child,
-              )
-            : child,
+        child: child,
       ),
     );
   }

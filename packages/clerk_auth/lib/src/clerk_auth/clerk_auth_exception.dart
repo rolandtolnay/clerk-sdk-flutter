@@ -6,6 +6,8 @@ class ClerkAuthException implements Exception {
     required this.message,
     this.statusCode,
     this.serverCodeList = const [],
+    this.code,
+    this.argument,
     this.substitution,
   });
 
@@ -14,6 +16,12 @@ class ClerkAuthException implements Exception {
 
   /// List of backend error codes
   final Iterable<String> serverCodeList;
+
+  /// The associated [AuthErrorCode]
+  final AuthErrorCode? code;
+
+  /// The associated [argument]
+  final String? argument;
 
   /// The associated [message]
   final String message;
@@ -34,4 +42,55 @@ class ClerkAuthException implements Exception {
   String get debugDescription {
     return 'ClerkAuthException(message: $message, codeList: $serverCodeList, statusCode: $statusCode, substitution: $substitution)';
   }
+}
+
+/// Code to enable consuming apps to identify the error
+enum AuthErrorCode {
+  /// Server error response
+  serverErrorResponse,
+
+  /// Webview error response
+  webviewErrorResponse,
+
+  /// Error during sign-up flow
+  signUpFlowError,
+
+  /// Invalid Password
+  invalidPassword,
+
+  /// Type Invalid
+  typeInvalid,
+
+  /// No stage for status
+  noStageForStatus,
+
+  /// No session token retrieved
+  noSessionTokenRetrieved,
+
+  /// No strategy associated with type,
+  noAssociatedStrategy,
+
+  /// No code retrieval method associated with the strategy,
+  noAssociatedCodeRetrievalMethod,
+
+  /// Password and password confirmation must match
+  passwordMatchError,
+
+  /// JWT poorly formatted
+  jwtPoorlyFormatted,
+
+  /// Awaited user action not completed in required timeframe
+  actionNotTimely,
+
+  /// No session found for user
+  noSessionFoundForUser,
+
+  /// Unsupported strategy for first factor
+  noSuchFirstFactorStrategy,
+
+  /// Unsupported strategy for second factor
+  noSuchSecondFactorStrategy,
+
+  /// Unsupported Sign-in attempt
+  signInError,
 }

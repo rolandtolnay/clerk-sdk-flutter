@@ -1,10 +1,13 @@
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 part 'attack_protection.g.dart';
 
 /// [AttackProtection] Clerk object
+@immutable
 @JsonSerializable()
-class AttackProtection {
+class AttackProtection with InformativeToStringMixin {
   /// Constructor
   const AttackProtection({
     this.userLockout = UserLockout.empty,
@@ -31,10 +34,12 @@ class AttackProtection {
       _$AttackProtectionFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$AttackProtectionToJson(this);
 }
 
 /// [UserLockout] Clerk object
+@immutable
 @JsonSerializable()
 class UserLockout {
   /// Constructor
@@ -63,7 +68,6 @@ class UserLockout {
   static UserLockout fromJson(Map<String, dynamic> json) =>
       _$UserLockoutFromJson(json);
 
-  /// toJson
   /// toJson
   Map<String, dynamic> toJson() => _$UserLockoutToJson(this);
 }

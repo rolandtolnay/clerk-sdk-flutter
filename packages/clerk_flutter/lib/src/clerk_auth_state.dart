@@ -2,65 +2,68 @@ import 'dart:async';
 
 import 'package:clerk_auth/clerk_auth.dart' as clerk;
 import 'package:clerk_flutter/clerk_flutter.dart';
+import 'package:clerk_flutter/src/utils/localization_extensions.dart';
+import 'package:clerk_flutter/src/widgets/ui/clerk_loading_overlay.dart';
+import 'package:clerk_flutter/src/widgets/ui/clerk_overlay_host.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+
+/// Function type used to report [clerk.ClerkAuthException]s
+///
+typedef ClerkErrorCallback = void Function(clerk.ClerkAuthException);
 
 /// An extension of [clerk.Auth] with [ChangeNotifier] so that
 /// updates to the auth state can be propagated out into the UI
 ///
 class ClerkAuthState extends clerk.Auth with ChangeNotifier {
   /// Construct a [ClerkAuthState]
-  ClerkAuthState._({
-    required super.publishableKey,
+  ClerkAuthState._(
+    this._config, {
     required super.persistor,
-    required this.translator,
-    super.pollMode,
     super.httpService,
-    Widget? loading,
-    super.sendTelemetryData,
-  }) : _loadingOverlay = OverlayEntry(
-          builder: (context) => loading ?? defaultLoadingWidget,
-        );
+    bool sendTelemetryData = true,
+  })  : _loadingOverlay = ClerkLoadingOverlay(_config),
+        super(config: _config);
 
   /// Create an [ClerkAuthState] object using appropriate Clerk credentials
   static Future<ClerkAuthState> create({
-    required String publishableKey,
+    required ClerkAuthConfig config,
     clerk.Persistor? persistor,
-    ClerkTranslator translator = const DefaultClerkTranslator(),
-    clerk.HttpService httpService = const clerk.DefaultHttpService(),
-    clerk.SessionTokenPollMode pollMode = clerk.SessionTokenPollMode.lazy,
     bool sendTelemetryData = true,
-    Widget? loading,
+    clerk.HttpService? httpService,
   }) async {
-    final provider = ClerkAuthState._(
-      publishableKey: publishableKey,
+    final authState = ClerkAuthState._(
+      config,
       persistor: persistor ??
           await clerk.DefaultPersistor.create(
             storageDirectory: await getApplicationDocumentsDirectory(),
           ),
-      translator: translator,
-      pollMode: pollMode,
-      loading: loading,
       sendTelemetryData: sendTelemetryData,
       httpService: httpService,
     );
-    await provider.initialize();
-    return provider;
+    await authState.initialize();
+    return authState;
   }
 
-  /// The [ClerkTranslator] for auth UI
-  final ClerkTranslator translator;
+  /// The [ClerkAuthConfig] object
+  @override
+  ClerkAuthConfig get config => _config;
+  final ClerkAuthConfig _config;
 
-  /// The [clerk.ClerkAuthException] stream
-  late final errorStream = _errors.stream;
+  /// Localizations for the current [ClerkAuthState] and [Locale]
+  ClerkSdkLocalizations localizationsOf(BuildContext context) {
+    final locale = View.of(context).platformDispatcher.locale;
+    final localizations = config.localizations[locale.toLanguageTag()] ??
+        config.localizations[locale.languageCode];
+    assert(localizations != null, 'No localizations found for $locale');
+    return localizations!;
+  }
 
-  final _errors = StreamController<clerk.ClerkAuthException>.broadcast();
-  final OverlayEntry _loadingOverlay;
+  final ClerkLoadingOverlay _loadingOverlay;
 
   static const _kRotatingTokenNonce = 'rotating_token_nonce';
-
   static const _kSsoRouteName = 'clerk_sso_popup';
 
   @override
@@ -73,50 +76,45 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
   }
 
   /// Performs SSO account connection according to the [strategy]
-  Future<void> connect(
+  Future<void> ssoConnect(
     BuildContext context,
     clerk.Strategy strategy, {
-    void Function(clerk.ClerkAuthException)? onError,
+    ClerkErrorCallback? onError,
   }) async {
-    final authState = ClerkAuth.of(context, listen: false);
-    await call(
+    await safelyCall(
       context,
-      () => authState.oauthConnect(strategy: strategy),
+      () => oauthConnect(strategy: strategy),
       onError: onError,
     );
-    final url = authState.client.user?.externalAccounts
-        ?.firstWhereOrNull(
-          (m) => m.verification.strategy == strategy && m.isVerified == false,
-        )
-        ?.verification
-        .providerUrl;
-    if (url != null && context.mounted) {
-      final redirectUrl = await showDialog<String>(
-        context: context,
-        useSafeArea: false,
-        useRootNavigator: true,
-        routeSettings: const RouteSettings(name: _kSsoRouteName),
-        builder: (context) => _SsoWebViewOverlay(url: url),
-      );
-      if (redirectUrl != null && context.mounted) {
-        final uri = Uri.parse(redirectUrl);
-        final token = uri.queryParameters[_kRotatingTokenNonce];
-        if (token case String token) {
-          await call(
-            context,
-            () => authState.attemptSignIn(strategy: strategy, token: token),
-            onError: onError,
-          );
-        } else {
-          await authState.refreshClient();
-          if (context.mounted) {
-            await call(context, () => authState.transfer(), onError: onError);
+    final accounts = client.user?.externalAccounts?.toSet() ?? {};
+    final acc = accounts.firstWhereOrNull(
+      (m) => m.verification.strategy == strategy && m.isVerified == false,
+    );
+    if (acc?.verification.externalVerificationRedirectUrl case String url) {
+      if (context.mounted) {
+        final responseUrl = await showDialog<String>(
+          context: context,
+          useSafeArea: false,
+          useRootNavigator: true,
+          routeSettings: const RouteSettings(name: _kSsoRouteName),
+          builder: (BuildContext context) {
+            return _SsoWebViewOverlay(
+              url: url,
+              oauthRedirect: clerk.ClerkConstants.oauthRedirect,
+              onError: (error) => _onError(error, onError),
+            );
+          },
+        );
+        if (responseUrl == clerk.ClerkConstants.oauthRedirect) {
+          await refreshClient();
+
+          final newAccounts = client.user?.externalAccounts?.toSet() ?? {};
+
+          if (newAccounts.difference(accounts).isNotEmpty && context.mounted) {
+            Navigator.of(context).popUntil(
+              (route) => route.settings.name != _kSsoRouteName,
+            );
           }
-        }
-        if (context.mounted) {
-          Navigator.of(context).popUntil(
-            (route) => route.settings.name != _kSsoRouteName,
-          );
         }
       }
     }
@@ -126,36 +124,40 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
   Future<void> ssoSignIn(
     BuildContext context,
     clerk.Strategy strategy, {
-    void Function(clerk.ClerkAuthException)? onError,
+    ClerkErrorCallback? onError,
   }) async {
-    final authState = ClerkAuth.of(context, listen: false);
-    await call(
+    await safelyCall(
       context,
-      () => authState.oauthSignIn(strategy: strategy),
+      () => oauthSignIn(strategy: strategy),
       onError: onError,
     );
-    final url = authState.client.signIn?.firstFactorVerification?.providerUrl;
+    final url =
+        client.signIn?.firstFactorVerification?.externalVerificationRedirectUrl;
     if (url != null && context.mounted) {
       final redirectUrl = await showDialog<String>(
         context: context,
         useSafeArea: false,
         useRootNavigator: true,
         routeSettings: const RouteSettings(name: _kSsoRouteName),
-        builder: (context) => _SsoWebViewOverlay(url: url),
+        builder: (context) => _SsoWebViewOverlay(
+          url: url,
+          oauthRedirect: clerk.ClerkConstants.oauthRedirect,
+          onError: (error) => _onError(error, onError),
+        ),
       );
       if (redirectUrl != null && context.mounted) {
         final uri = Uri.parse(redirectUrl);
         final token = uri.queryParameters[_kRotatingTokenNonce];
         if (token case String token) {
-          await call(
+          await safelyCall(
             context,
-            () => authState.attemptSignIn(strategy: strategy, token: token),
+            () => attemptSignIn(strategy: strategy, token: token),
             onError: onError,
           );
         } else {
-          await authState.refreshClient();
+          await refreshClient();
           if (context.mounted) {
-            await call(context, () => authState.transfer(), onError: onError);
+            await safelyCall(context, () => transfer(), onError: onError);
           }
         }
         if (context.mounted) {
@@ -169,26 +171,26 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
 
   /// Convenience method to make an auth call to the backend via ClerkAuth
   /// with error handling
-  Future<T?> call<T>(
+  Future<T?> safelyCall<T>(
     BuildContext context,
     Future<T> Function() fn, {
-    void Function(clerk.ClerkAuthException)? onError,
+    ClerkErrorCallback? onError,
   }) async {
     T? result;
+    final overlay = ClerkOverlay.of(context);
+    _loadingOverlay.insertInto(overlay);
     try {
-      if (context.mounted && !_loadingOverlay.mounted) {
-        Overlay.of(context).insert(_loadingOverlay);
-      }
       result = await fn();
     } on clerk.ClerkAuthException catch (error) {
-      _errors.add(error);
-      onError?.call(error);
+      _onError(error, onError);
     } finally {
-      if (_loadingOverlay.mounted) {
-        _loadingOverlay.remove();
-      }
+      _loadingOverlay.removeFrom(overlay);
     }
     return result;
+  }
+
+  void _onError(clerk.ClerkAuthException error, ClerkErrorCallback? onError) {
+    onError?.call(error);
   }
 
   /// Returns a boolean regarding whether or not a password has been supplied,
@@ -199,64 +201,79 @@ class ClerkAuthState extends clerk.Auth with ChangeNotifier {
       env.user.passwordSettings.meetsRequiredCriteria(password!);
 
   /// Checks the password according to the criteria required by the `env`
-  /// Note that password and confirmation must match, but that includes
-  /// not having been supplied (i.e. null or empty). These are valid for parsing
-  /// but may still not be acceptable to the back end
-  String? checkPassword(String? password, String? confirmation) {
+  String? checkPassword(
+    String? password,
+    String? confirmation,
+    ClerkSdkLocalizations localizations,
+  ) {
+    if (password?.isNotEmpty != true) {
+      return localizations.passwordMustBeSupplied;
+    }
+
     if (password != confirmation) {
-      return translator.translate(
-        'Password and password confirmation must match',
-      );
+      return localizations.passwordAndPasswordConfirmationMustMatch;
     }
 
     if (password case String password when password.isNotEmpty) {
       final criteria = env.user.passwordSettings;
       final missing = <String>[];
 
+      if (criteria.meetsLengthCriteria(password) == false) {
+        if (criteria.maxLength > 0) {
+          missing.add(
+            localizations.aLengthOfBetweenMINAndMAX(
+              criteria.minLength,
+              criteria.maxLength,
+            ),
+          );
+        } else {
+          missing.add(
+            localizations.aLengthOfMINOrGreater(criteria.minLength),
+          );
+        }
+      }
+
       if (criteria.meetsLowerCaseCriteria(password) == false) {
-        missing.add(translator.translate('a LOWERCASE letter'));
+        missing.add(localizations.aLowercaseLetter);
       }
 
       if (criteria.meetsUpperCaseCriteria(password) == false) {
-        missing.add(translator.translate('an UPPERCASE letter'));
+        missing.add(localizations.anUppercaseLetter);
       }
 
       if (criteria.meetsNumberCriteria(password) == false) {
-        missing.add(translator.translate('a NUMBER'));
+        missing.add(localizations.aNumber);
       }
 
       if (criteria.meetsSpecialCharCriteria(password) == false) {
         missing.add(
-          translator.translate(
-            'a SPECIAL CHARACTER (###)',
-            substitution: criteria.allowedSpecialCharacters,
-          ),
+          localizations.aSpecialCharacter(criteria.allowedSpecialCharacters),
         );
       }
 
       if (missing.isNotEmpty) {
-        return translator.alternatives(
+        return StringExt.alternatives(
           missing,
-          connector: translator.translate('and'),
-          prefix: translator.translate('Password requires'),
+          connector: localizations.and,
+          prefix: localizations.passwordRequires,
         );
       }
     }
 
     return null;
   }
-
-  /// Add an [clerk.ClerkAuthException] for [message] to the [errorStream]
-  void addError(String message) =>
-      _errors.add(clerk.ClerkAuthException(message: message));
 }
 
 class _SsoWebViewOverlay extends StatefulWidget {
   const _SsoWebViewOverlay({
     required this.url,
+    required this.oauthRedirect,
+    required this.onError,
   });
 
   final String url;
+  final String oauthRedirect;
+  final ClerkErrorCallback onError;
 
   @override
   State<_SsoWebViewOverlay> createState() => _SsoWebViewOverlayState();
@@ -264,11 +281,12 @@ class _SsoWebViewOverlay extends StatefulWidget {
 
 class _SsoWebViewOverlayState extends State<_SsoWebViewOverlay> {
   late final WebViewController controller;
-  var _title = Future<String?>.value('Loading…');
+  Future<String?>? _title;
 
   @override
   void initState() {
     super.initState();
+
     controller = WebViewController()
       ..setUserAgent(
         'Clerk Flutter SDK v${clerk.ClerkConstants.flutterSdkVersion}',
@@ -278,20 +296,39 @@ class _SsoWebViewOverlayState extends State<_SsoWebViewOverlay> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onPageFinished: (_) => _updateTitle(),
+          onWebResourceError: (e) => widget.onError(
+            clerk.ClerkAuthException(
+              code: clerk.AuthErrorCode.webviewErrorResponse,
+              message: e.description,
+            ),
+          ),
           onNavigationRequest: (NavigationRequest request) async {
-            if (request.url.startsWith(clerk.Auth.oauthRedirect)) {
-              scheduleMicrotask(() {
-                if (mounted) {
-                  Navigator.of(context).pop(request.url);
-                }
-              });
-              return NavigationDecision.prevent;
+            try {
+              if (request.url.startsWith(widget.oauthRedirect)) {
+                scheduleMicrotask(() {
+                  if (mounted) {
+                    Navigator.of(context).pop(request.url);
+                  }
+                });
+                return NavigationDecision.prevent;
+              }
+              return NavigationDecision.navigate;
+            } on clerk.ClerkAuthException catch (error) {
+              widget.onError(error);
+              return NavigationDecision.navigate;
             }
-            return NavigationDecision.navigate;
           },
         ),
       );
     controller.loadRequest(Uri.parse(widget.url));
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _title ??= Future<String?>.value(
+      ClerkAuth.localizationsOf(context).loading,
+    );
   }
 
   void _updateTitle() {
@@ -306,7 +343,7 @@ class _SsoWebViewOverlayState extends State<_SsoWebViewOverlay> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: FutureBuilder(
-          future: _title,
+          future: _title!,
           builder: (context, snapshot) {
             return Text(snapshot.data ?? '');
           },

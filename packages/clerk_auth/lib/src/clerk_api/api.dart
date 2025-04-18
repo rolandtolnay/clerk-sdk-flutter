@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io' show File, HttpHeaders, HttpStatus;
 
 import 'package:clerk_auth/src/clerk_api/token_cache.dart';
+import 'package:clerk_auth/src/clerk_auth/auth_config.dart';
 import 'package:clerk_auth/src/clerk_auth/http_service.dart';
 import 'package:clerk_auth/src/clerk_auth/persistor.dart';
 import 'package:clerk_auth/src/clerk_constants.dart';
@@ -18,62 +19,52 @@ export 'package:clerk_auth/src/models/enums.dart' show SessionTokenPollMode;
 /// [Api] manages communication with the Clerk frontend API
 ///
 class Api with Logging {
-  Api._(this._tokenCache, this._domain, this._httpService, this._pollMode);
-
-  /// Create an [Api] object for a given Publishable Key, or return the existing one
-  /// if such already exists for that key. Requires a [publishableKey]
-  /// found in the Clerk dashboard for you account. Additional arguments:
+  /// Create an [Api] object
   ///
-  /// [persistor]: an optional instance of a [Persistor] which will keep track of
-  /// tokens and expiry between app activations
-  ///
-  /// [client]: an optional instance of [HttpService] to manage low-level communications
-  /// with the back end. Injected for e.g. test mocking
-  ///
-  /// [pollMode]: session token poll mode, default [SessionTokenPollMode.lazy],
-  /// manages how to refresh the [sessionToken].
-  ///
-  factory Api({
-    required String publishableKey,
+  Api({
+    required this.config,
+    required this.httpService,
     required Persistor persistor,
-    required HttpService httpService,
-    SessionTokenPollMode pollMode = SessionTokenPollMode.lazy,
-  }) =>
-      Api._(
-        TokenCache(
+  })  : _tokenCache = TokenCache(
           persistor: persistor,
-          cacheId: publishableKey.hashCode,
+          publishableKey: config.publishableKey,
         ),
-        _deriveDomainFrom(publishableKey),
-        httpService,
-        pollMode,
-      );
+        _domain = _deriveDomainFrom(config.publishableKey),
+        _testMode = config.isTestMode;
+
+  /// The config used to initialise this api instance.
+  final AuthConfig config;
+
+  /// The [HttpService] used to send the server requests.
+  final HttpService httpService;
 
   final TokenCache _tokenCache;
   final String _domain;
-  final HttpService _httpService;
-  final SessionTokenPollMode _pollMode;
-  Timer? _pollTimer;
 
-  static const _scheme = 'https';
-  static const _kJwtKey = 'jwt';
-  static const _kIsNative = '_is_native';
-  static const _kClerkSessionId = '_clerk_session_id';
-  static const _kClerkJsVersion = '_clerk_js_version';
-  static const _kErrorsKey = 'errors';
-  static const _kClientKey = 'client';
-  static const _kResponseKey = 'response';
+  bool _testMode;
+  Timer? _pollTimer;
+  bool _multiSessionMode = true;
+
   static const _kClerkAPIVersion = 'clerk-api-version';
+  static const _kClerkClientId = 'x-clerk-client-id';
+  static const _kClerkJsVersion = '_clerk_js_version';
+  static const _kClerkSessionId = '_clerk_session_id';
+  static const _kClientKey = 'client';
+  static const _kErrorsKey = 'errors';
+  static const _kIsNative = '_is_native';
+  static const _kJwtKey = 'jwt';
+  static const _kOrganizationId = 'organization_id';
+  static const _kResponseKey = 'response';
   static const _kXFlutterSDKVersion = 'x-flutter-sdk-version';
   static const _kXMobile = 'x-mobile';
-  static const _kOrganizationId = 'organization_id';
+  static const _scheme = 'https';
 
-  static const _defaultPollDelay = Duration(seconds: 55);
+  static const _defaultPollDelay = Duration(seconds: 53);
 
   /// Initialise the API
   Future<void> initialize() async {
     await _tokenCache.initialize();
-    if (_pollMode == SessionTokenPollMode.hungry) {
+    if (config.sessionTokenPollMode == SessionTokenPollMode.hungry) {
       await _pollForSessionToken();
     }
   }
@@ -95,7 +86,12 @@ class Api with Logging {
     final resp = await _fetch(path: '/environment', method: HttpMethod.get);
     if (resp.statusCode == HttpStatus.ok) {
       final body = json.decode(resp.body) as Map<String, dynamic>;
-      return Environment.fromJson(body);
+      final env = Environment.fromJson(body);
+
+      _testMode = env.config.testMode && config.isTestMode;
+      _multiSessionMode = env.config.singleSessionMode == false;
+
+      return env;
     }
     return Environment.empty;
   }
@@ -401,6 +397,34 @@ class Api with Logging {
 
   // oAuth
 
+  /// Connect an [ExternalAccount]
+  ///
+  Future<ApiResponse> addExternalAccount({
+    required Strategy strategy,
+    String? redirectUrl,
+  }) async {
+    return await _fetchApiResponse(
+      '/me/external_accounts',
+      withSession: true,
+      params: {
+        'strategy': strategy,
+        'redirect_url': redirectUrl,
+      },
+    );
+  }
+
+  /// Delete an [ExternalAccount]
+  ///
+  Future<ApiResponse> deleteExternalAccount({
+    required ExternalAccount account,
+  }) async {
+    return await _fetchApiResponse(
+      '/me/external_accounts/${account.id}',
+      withSession: true,
+      method: HttpMethod.delete,
+    );
+  }
+
   /// After signing in via oauth, transfer the [SignUp] into an authenticated [User]
   ///
   Future<ApiResponse> transfer() async {
@@ -441,7 +465,7 @@ class Api with Logging {
 
   /// Update details pertaining to the current [User]
   ///
-  Future<ApiResponse> updateUser(User user, AuthConfig config) async {
+  Future<ApiResponse> updateUser(User user, Config config) async {
     return await _fetchApiResponse(
       '/me',
       method: HttpMethod.patch,
@@ -457,7 +481,7 @@ class Api with Logging {
         'primary_phone_number_id': user.primaryPhoneNumberId,
         'primary_web3_wallet_id': user.primaryWeb3WalletId,
         'unsafe_metadata':
-            user.hasMetadata ? json.encode(user.userMetadata) : null,
+            user.hasMetadata ? json.encode(user.unsafeMetadata) : null,
       },
     );
   }
@@ -572,11 +596,93 @@ class Api with Logging {
 
   /// Create a new [Organization]
   ///
-  Future<ApiResponse> createOrganization(String name) async {
+  Future<ApiResponse> createOrganization(
+    String name, {
+    Session? session,
+  }) async {
     return await _fetchApiResponse(
       '/organizations',
+      withSession: true,
       params: {
         'name': name,
+        _kClerkSessionId: session?.id, // An explict session ID, if supplied
+      },
+    );
+  }
+
+  /// Fetch invitations to new [Organization]s for the current user
+  ///
+  Future<ApiResponse> fetchOrganizationInvitations([
+    int offset = 0,
+    int limit = 20,
+  ]) async {
+    return await _fetchApiResponse(
+      '/me/organization_invitations',
+      method: HttpMethod.get,
+      withSession: true,
+      params: {
+        'offset': offset,
+        'limit': limit,
+      },
+    );
+  }
+
+  /// Fetch an [Organization]'s [Domain]s
+  ///
+  Future<ApiResponse> fetchOrganizationDomains(
+    Organization org, [
+    int offset = 0,
+    int limit = 20,
+  ]) async {
+    return await _fetchApiResponse(
+      '/organizations/${org.id}/domains',
+      method: HttpMethod.get,
+      withSession: true,
+      params: {
+        'offset': offset,
+        'limit': limit,
+      },
+    );
+  }
+
+  /// Accept an invitation to join an [Organization]
+  ///
+  Future<ApiResponse> acceptOrganizationInvitation(
+    OrganizationInvitation invitation,
+  ) async {
+    return await _fetchApiResponse(
+      '/me/organization_invitations/${invitation.id}/accept',
+      withSession: true,
+    );
+  }
+
+  /// Add a [Domain] to an [Organization]
+  ///
+  Future<ApiResponse> createDomain(
+    Organization org,
+    String name,
+  ) async {
+    return await _fetchApiResponse(
+      '/organizations/${org.id}/domains',
+      withSession: true,
+      params: {
+        'name': name,
+      },
+    );
+  }
+
+  /// Update the enrollment mode for a [Domain]
+  ///
+  Future<ApiResponse> updateDomainEnrollmentMode(
+    Organization org,
+    String domainId,
+    EnrollmentMode mode,
+  ) async {
+    return await _fetchApiResponse(
+      '/organizations/${org.id}/domains/$domainId/update_enrollment_mode',
+      withSession: true,
+      params: {
+        'enrollment_mode': mode,
       },
     );
   }
@@ -585,36 +691,66 @@ class Api with Logging {
   ///
   Future<ApiResponse> updateOrganization(
     Organization org, {
+    Session? session,
     String? name,
     String? slug,
   }) async {
     return await _fetchApiResponse(
       '/organizations/${org.id}',
       method: HttpMethod.patch,
+      withSession: true,
       params: {
         'name': name,
         'slug': slug,
+        _kClerkSessionId: session?.id, // An explict session ID, if supplied
       },
     );
   }
 
   /// Delete an [Organization]
   ///
-  Future<ApiResponse> deleteOrganization(Organization org) async {
+  Future<ApiResponse> deleteOrganization(
+    Organization org, {
+    Session? session,
+  }) async {
     return await _fetchApiResponse(
       '/organizations/${org.id}',
       method: HttpMethod.delete,
+      withSession: true,
+      params: {
+        _kClerkSessionId: session?.id, // An explict session ID, if supplied
+      },
     );
   }
 
   /// Update the current [User]'s avatar
   ///
   Future<ApiResponse> updateOrganizationLogo(
-    Organization org,
-    File file,
-  ) async {
-    final uri = _uri('/organizations/${org.id}/logo');
-    return await _uploadFile(HttpMethod.put, uri, file);
+    Organization org, {
+    required File logo,
+    Session? session,
+  }) async {
+    final params = _multiSessionMode && session is Session
+        ? {_kClerkSessionId: session.id}
+        : null;
+    final uri = _uri('/organizations/${org.id}/logo', params: params);
+    return await _uploadFile(HttpMethod.put, uri, logo);
+  }
+
+  /// Leave an [Organization]
+  ///
+  Future<ApiResponse> leaveOrganization(
+    Organization org, {
+    Session? session,
+  }) async {
+    return await _fetchApiResponse(
+      '/me/organization_memberships/${org.id}',
+      method: HttpMethod.delete,
+      withSession: true,
+      params: {
+        _kClerkSessionId: session?.id, // An explict session ID, if supplied
+      },
+    );
   }
 
   /// Delete an [Organization]'s logo
@@ -628,7 +764,7 @@ class Api with Logging {
 
   // Session
 
-  /// Return the [sessionToken] for the current active [Session], refreshing it
+  /// Return the [SessionToken] for the current active [Session], refreshing it
   /// if required
   ///
   Future<SessionToken?> sessionToken([
@@ -686,7 +822,7 @@ class Api with Logging {
     try {
       final length = await file.length();
       final stream = http.ByteStream(file.openRead());
-      final resp = await _httpService.sendByteStream(
+      final resp = await httpService.sendByteStream(
         method,
         uri,
         stream,
@@ -707,9 +843,6 @@ class Api with Logging {
     HttpMethod method = HttpMethod.post,
     Map<String, String>? headers,
     Map<String, dynamic>? params,
-
-    /// for requests that require a `_client_session_id` query parameter,
-    /// set this to true. see: https://clerk.com/docs/reference/frontend-api/tag/Email-Addresses#operation/createEmailAddresses
     bool withSession = false,
   }) async {
     try {
@@ -746,7 +879,7 @@ class Api with Logging {
     };
     if (clientData case Map<String, dynamic> clientJson) {
       final client = Client.fromJson(clientJson);
-      _tokenCache.updateFrom(resp, client.activeSession);
+      _tokenCache.updateFrom(resp, client);
       return ApiResponse(
         client: client,
         status: resp.statusCode,
@@ -780,7 +913,7 @@ class Api with Logging {
         _queryParams(method, withSession: withSession, params: parsedParams);
     final uri = _uri(path, params: queryParams);
 
-    final resp = await _httpService.send(
+    final resp = await httpService.send(
       method,
       uri,
       headers: headers,
@@ -807,15 +940,18 @@ class Api with Logging {
     HttpMethod method, {
     bool withSession = false,
     Map<String, dynamic>? params,
-  }) =>
-      {
-        _kIsNative: true,
-        _kClerkJsVersion: ClerkConstants.jsVersion,
-        if (withSession) //
-          _kClerkSessionId: _tokenCache.sessionId,
-        if (method.isGet) //
-          ...?params,
-      };
+  }) {
+    final sessionId =
+        params?.remove(_kClerkSessionId)?.toString() ?? _tokenCache.sessionId;
+    return {
+      _kIsNative: true,
+      _kClerkJsVersion: ClerkConstants.jsVersion,
+      if (withSession && _multiSessionMode && sessionId.isNotEmpty) //
+        _kClerkSessionId: sessionId,
+      if (method.isGet) //
+        ...?params,
+    };
+  }
 
   Uri _uri(String path, {Map<String, dynamic>? params}) {
     return Uri(
@@ -832,6 +968,7 @@ class Api with Logging {
   }) {
     return {
       HttpHeaders.acceptHeader: 'application/json',
+      HttpHeaders.acceptLanguageHeader: config.localesLookup().join(', '),
       HttpHeaders.contentTypeHeader: method.isGet
           ? 'application/json'
           : 'application/x-www-form-urlencoded',
@@ -839,6 +976,8 @@ class Api with Logging {
         HttpHeaders.authorizationHeader: _tokenCache.clientToken,
       _kClerkAPIVersion: ClerkConstants.clerkApiVersion,
       _kXFlutterSDKVersion: ClerkConstants.flutterSdkVersion,
+      if (_testMode) //
+        _kClerkClientId: _tokenCache.clientId,
       _kXMobile: '1',
       ...?headers,
     };

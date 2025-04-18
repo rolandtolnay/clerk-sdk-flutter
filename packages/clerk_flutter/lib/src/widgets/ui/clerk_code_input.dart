@@ -1,4 +1,6 @@
-import 'package:clerk_flutter/clerk_flutter.dart';
+import 'package:clerk_flutter/src/widgets/ui/common.dart';
+import 'package:clerk_flutter/src/widgets/ui/multi_digit_code_input.dart';
+import 'package:clerk_flutter/src/widgets/ui/style/text_style.dart';
 import 'package:flutter/material.dart';
 
 /// Widget which wraps a [MultiDigitCodeInput] widget, providing
@@ -8,6 +10,7 @@ class ClerkCodeInput extends StatelessWidget {
   const ClerkCodeInput({
     super.key,
     required this.onSubmit,
+    this.focusNode,
     this.title,
     this.subtitle,
     this.isSmall = false,
@@ -24,6 +27,10 @@ class ClerkCodeInput extends StatelessWidget {
 
   /// Should the input boxes be compressed?
   final bool isSmall;
+
+  /// focus node
+  final FocusNode? focusNode;
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -48,7 +55,11 @@ class ClerkCodeInput extends StatelessWidget {
             style: ClerkTextStyle.subtitleDark,
           ),
         verticalMargin4,
-        MultiDigitCodeInput(onSubmit: onSubmit, isSmall: isSmall),
+        MultiDigitCodeInput(
+          onSubmit: onSubmit,
+          isSmall: isSmall,
+          focusNode: focusNode,
+        ),
       ],
     );
   }

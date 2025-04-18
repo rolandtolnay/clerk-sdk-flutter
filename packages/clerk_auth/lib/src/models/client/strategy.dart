@@ -1,4 +1,7 @@
 import 'package:clerk_auth/src/models/client/field.dart';
+import 'package:clerk_auth/src/models/enums.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 import '../../clerk_auth/clerk_auth_exception.dart';
 
@@ -7,6 +10,8 @@ import '../../clerk_auth/clerk_auth_exception.dart';
 /// A [Strategy] has a [name]. The various oAuth strategies ('oauth',
 /// 'oauth_token' and 'oauth_custom') also have a [provider]
 ///
+@immutable
+@JsonSerializable()
 class Strategy {
   /// Constructor for [Strategy]
   const Strategy({required this.name, this.provider});
@@ -191,7 +196,7 @@ class Strategy {
     return null;
   }
 
-  /// For a given field, return an appropriate [Strategy], or
+  /// For a given [Field], return an appropriate [Strategy], or
   /// throw an error
   ///
   static Strategy forField(Field field) {
@@ -199,8 +204,24 @@ class Strategy {
       Field.phoneNumber => Strategy.phoneCode,
       Field.emailAddress => Strategy.emailCode,
       _ => throw ClerkAuthException(
-          message: 'No strategy associated with ###',
-          substitution: field.name,
+          message: 'No strategy associated with {arg}',
+          argument: field.name,
+          code: AuthErrorCode.noAssociatedStrategy,
+        ),
+    };
+  }
+
+  /// For a given [UserAttribute], return an appropriate [Strategy], or
+  /// throw an error
+  ///
+  static Strategy forUserAttribute(UserAttribute attr) {
+    return switch (attr) {
+      UserAttribute.phoneNumber => Strategy.phoneCode,
+      UserAttribute.emailAddress => Strategy.emailCode,
+      _ => throw ClerkAuthException(
+          message: 'No strategy associated with {arg}',
+          argument: attr.name,
+          code: AuthErrorCode.noAssociatedStrategy,
         ),
     };
   }
@@ -208,6 +229,7 @@ class Strategy {
   /// toJson
   String toJson() => toString();
 
+  /// toJson
   @override
   String toString() => [name, provider].nonNulls.join('_');
 }

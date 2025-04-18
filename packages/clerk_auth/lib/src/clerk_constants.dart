@@ -13,4 +13,7 @@ sealed class ClerkConstants {
 
   /// JsVersion of API
   static const jsVersion = '4.70.0';
+
+  /// The url used to catch oauth redirects
+  static const oauthRedirect = 'com.clerk.flutter://callback';
 }

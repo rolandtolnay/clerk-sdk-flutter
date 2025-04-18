@@ -6,8 +6,6 @@ import 'package:example/persistor/file_persistor.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 
-import 'persistor/memory_persistor.dart';
-
 const key = String.fromEnvironment('CLERK_PUBLISHABLE_KEY');
 
 Future<void> main() async {
@@ -18,65 +16,60 @@ Future<void> main() async {
   final appDirectory = await getApplicationDocumentsDirectory();
   final persistor = await FilePersistor.create(storageDirectory: appDirectory);
 
-  runApp(ExampleApp(publishableKey: key, persistor: persistor));
+  final authState = await ClerkAuthState.create(
+    config: ClerkAuthConfig(publishableKey: key),
+    persistor: persistor,
+  );
+
+  runApp(ExampleApp(authState: authState));
 }
 
 class ExampleApp extends StatefulWidget {
   const ExampleApp({
     super.key,
-    required this.publishableKey,
-    this.persistor,
+    required this.authState,
   });
 
-  final String publishableKey;
-  final Persistor? persistor;
+  final ClerkAuthState authState;
 
   @override
   State<ExampleApp> createState() => _ExampleAppState();
 }
 
 class _ExampleAppState extends State<ExampleApp> {
-  late final Persistor persistor;
-
   @override
   void initState() {
-    persistor = widget.persistor ?? MemoryPersistor();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return ClerkAuth(
-      publishableKey: widget.publishableKey,
-      persistor: persistor,
+      authState: widget.authState,
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         builder: (BuildContext context, Widget? child) {
           return ClerkErrorListener(child: child!);
         },
         home: Scaffold(
-          backgroundColor: ClerkColors.whiteSmoke,
           body: SafeArea(
-            child: Padding(
-              padding: horizontalPadding32,
-              child: Center(
-                child: ClerkAuthBuilder(
-                  signedInBuilder: (context, auth) => Column(
-                    children: [
-                      Spacer(),
-                      const ClerkUserButton(),
-                      const SizedBox(height: 40),
-                      ElevatedButton(
-                        onPressed: () async {},
-                        child: const Text('Print JWT'),
-                      ),
-                      Spacer(),
-                    ],
-                  ),
-                  signedOutBuilder: (context, auth) {
-                    return const ClerkAuthenticationWidget();
-                  },
+            child: Center(
+              child: ClerkAuthBuilder(
+                signedInBuilder: (context, auth) => Column(
+                  children: [
+                    Spacer(),
+                    const ClerkUserButton(),
+                    const SizedBox(height: 40),
+                    ElevatedButton(
+                      onPressed: () async {},
+                      child: const Text('Print JWT'),
+                    ),
+                    Spacer(),
+                  ],
                 ),
+                signedOutBuilder: (context, auth) {
+                  return const ClerkAuthentication();
+                },
               ),
             ),
           ),

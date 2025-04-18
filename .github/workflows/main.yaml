@@ -23,6 +23,9 @@ jobs:
       - name: 'Install tools: melos and fvm'
         run: dart pub global activate melos && dart pub global activate fvm
 
+      - name: Install FVM
+        run: fvm install
+
       - name: Install top-level dependencies
         run: dart pub get
 
@@ -33,6 +36,10 @@ jobs:
         run: dart format --output=none --set-exit-if-changed .
         working-directory: packages/clerk_auth
 
+      - name: Verify formatting of clerk_backend_api
+        run: dart format --output=none --set-exit-if-changed .
+        working-directory: packages/clerk_backend_api
+
       - name: Verify formatting of clerk_flutter
         run: dart format --output=none --set-exit-if-changed .
         working-directory: packages/clerk_flutter
@@ -40,6 +47,10 @@ jobs:
       - name: Analyze clerk_auth
         run: dart analyze
         working-directory: packages/clerk_auth
+
+      - name: Analyze clerk_backend_api
+        run: dart analyze
+        working-directory: packages/clerk_backend_api
 
       - name: Analyze clerk_flutter
         run: flutter analyze
@@ -52,5 +63,21 @@ jobs:
           echo $TEST_ENV_BASE64 | base64 --decode > packages/clerk_auth/.env.test
 
       - name: Run tests in clerk_auth
-        run: dart test
+        run: dart test --file-reporter=json:../../reports/clerk_auth.json
         working-directory: packages/clerk_auth
+
+      - name: Run tests in clerk_backend_api
+        run: dart test --file-reporter=json:../../reports/clerk_backend_api.json
+        working-directory: packages/clerk_backend_api
+
+      - name: Run tests in clerk_flutter
+        run: flutter test --file-reporter=json:../../reports/clerk_flutter.json
+        working-directory: packages/clerk_flutter
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()    # run this step even if previous step failed
+        with:
+          name: 'Test Report'         # Name of the check run which will be created
+          path: reports/*.json        # Path to test results
+          reporter: flutter-json      # Format of test results

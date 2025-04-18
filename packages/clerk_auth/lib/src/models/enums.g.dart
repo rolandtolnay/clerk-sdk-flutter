@@ -7,31 +7,9 @@ part of 'enums.dart';
 // **************************************************************************
 
 const _$EnrollmentModeEnumMap = {
+  EnrollmentMode.automaticSuggestion: 'automatic_suggestion',
+  EnrollmentMode.automaticInvitation: 'automatic_invitation',
   EnrollmentMode.manualInvitation: 'manual_invitation',
-};
-
-const _$StatusEnumMap = {
-  Status.abandoned: 'abandoned',
-  Status.active: 'active',
-  Status.missingRequirements: 'missing_requirements',
-  Status.needsIdentifier: 'needs_identifier',
-  Status.needsFirstFactor: 'needs_first_factor',
-  Status.needsSecondFactor: 'needs_second_factor',
-  Status.transferable: 'transferable',
-  Status.unverified: 'unverified',
-  Status.verified: 'verified',
-  Status.complete: 'complete',
-  Status.expired: 'expired',
-  Status.failed: 'failed',
-};
-
-const _$IdentificationStrategyEnumMap = {
-  IdentificationStrategy.emailAddress: 'email_address',
-  IdentificationStrategy.oauthApple: 'oauth_apple',
-  IdentificationStrategy.oauthGithub: 'oauth_github',
-  IdentificationStrategy.oauthGoogle: 'oauth_google',
-  IdentificationStrategy.phoneNumber: 'phone_number',
-  IdentificationStrategy.username: 'username',
 };
 
 const _$UserAttributeEnumMap = {

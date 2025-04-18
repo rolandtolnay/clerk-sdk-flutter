@@ -1,14 +1,17 @@
+import 'package:clerk_auth/src/clerk_auth/clerk_auth_exception.dart';
+import 'package:clerk_auth/src/models/client.dart';
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:clerk_auth/src/utils/extensions.dart';
 import 'package:clerk_auth/src/utils/json_serialization_helpers.dart';
 import 'package:json_annotation/json_annotation.dart';
-
-import '../models.dart';
+import 'package:meta/meta.dart';
 
 part 'client.g.dart';
 
 /// [Client] Clerk object
+@immutable
 @JsonSerializable()
-class Client {
+class Client with InformativeToStringMixin {
   /// Constructor
   const Client({
     this.id,
@@ -53,6 +56,7 @@ class Client {
   static Client fromJson(Map<String, dynamic> json) => _$ClientFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$ClientToJson(this);
 
   /// iterable of current user ids
@@ -70,6 +74,23 @@ class Client {
 
     return null;
   }
+
+  /// Find a [Session] for a given [User]
+  Session sessionFor(User user) {
+    for (final session in sessions) {
+      if (session.user.id == user.id) {
+        return session;
+      }
+    }
+    throw ClerkAuthException(
+      message: 'No session found for {arg}',
+      argument: user.name,
+      code: AuthErrorCode.noSessionFoundForUser,
+    );
+  }
+
+  /// Get the latest version of this [User]
+  User refreshUser(User user) => sessionFor(user).user;
 
   /// the current [User] if available
   User? get user => activeSession?.user;

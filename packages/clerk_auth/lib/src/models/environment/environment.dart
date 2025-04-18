@@ -1,18 +1,21 @@
 import 'package:clerk_auth/src/models/client/strategy.dart';
-import 'package:clerk_auth/src/models/environment/auth_config.dart';
+import 'package:clerk_auth/src/models/environment/config.dart';
 import 'package:clerk_auth/src/models/environment/display_config.dart';
 import 'package:clerk_auth/src/models/environment/organization_settings.dart';
 import 'package:clerk_auth/src/models/environment/user_settings.dart';
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 part 'environment.g.dart';
 
 /// [Environment] Clerk object
+@immutable
 @JsonSerializable()
-class Environment {
+class Environment with InformativeToStringMixin {
   /// Construction
   const Environment({
-    this.config = AuthConfig.empty,
+    this.config = Config.empty,
     this.display = DisplayConfig.empty,
     this.user = UserSettings.empty,
     this.organization = OrganizationSettings.empty,
@@ -21,7 +24,7 @@ class Environment {
 
   /// auth config
   @JsonKey(name: 'auth_config')
-  final AuthConfig config;
+  final Config config;
 
   /// display config
   @JsonKey(name: 'display_config')
@@ -77,5 +80,6 @@ class Environment {
       _$EnvironmentFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$EnvironmentToJson(this);
 }

@@ -1,7 +1,8 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:clerk_auth/src/utils/extensions.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 
 /// Enum detailing [HttpMethod]s used by the Clerk API
 enum HttpMethod {
@@ -33,16 +34,25 @@ enum HttpMethod {
 /// Abstract class defining the interface to call the
 /// Clerk back-end over http
 ///
-abstract class HttpService {
-  /// Constructor
+abstract interface class HttpService {
+  /// Construct a [HttpService]
   const HttpService();
 
-  /// An empty implementation
-  static final none = _NoneHttpService();
+  /// Initialises this instance of the http service
+  ///
+  /// It is possible that [initialise] will be called
+  /// multiple times, and must be prepared for that to happen
+  Future<void> initialise();
+
+  /// Terminates this instance of the http service
+  ///
+  /// It is possible that [terminate] will be called
+  /// multiple times, and must be prepared for that to happen
+  void terminate();
 
   /// [send] data to the back end, and receive a [Response]
   ///
-  Future<Response> send(
+  Future<http.Response> send(
     HttpMethod method,
     Uri uri, {
     Map<String, String>? headers,
@@ -52,54 +62,43 @@ abstract class HttpService {
 
   /// Upload a [File] to the back end, and receive a [Response]
   ///
-  Future<Response> sendByteStream(
+  Future<http.Response> sendByteStream(
     HttpMethod method,
     Uri uri,
-    ByteStream byteStream,
+    http.ByteStream byteStream,
     int length,
     Map<String, String> headers,
   );
 }
 
-class _NoneHttpService implements HttpService {
-  @override
-  Future<Response> send(
-    HttpMethod method,
-    Uri uri, {
-    Map<String, String>? headers,
-    Map<String, dynamic>? params,
-    String? body,
-  }) {
-    return Future.value(Response('', 200));
-  }
-
-  @override
-  Future<Response> sendByteStream(
-    HttpMethod method,
-    Uri uri,
-    ByteStream byteStream,
-    int length,
-    Map<String, String> headers,
-  ) {
-    return Future.value(Response('', 200));
-  }
-}
-
 /// Default implementation of [HttpService]
 ///
-class DefaultHttpService implements HttpService {
+class DefaultHttpService extends HttpService {
   /// Constructor
-  const DefaultHttpService();
+  DefaultHttpService();
+
+  http.Client? _client;
 
   @override
-  Future<Response> send(
+  Future<void> initialise() async {
+    _client ??= http.Client();
+  }
+
+  @override
+  void terminate() {
+    _client?.close();
+    _client = null;
+  }
+
+  @override
+  Future<http.Response> send(
     HttpMethod method,
     Uri uri, {
     Map<String, String>? headers,
     Map<String, dynamic>? params,
     String? body,
   }) async {
-    final request = Request(method.toString(), uri);
+    final request = http.Request(method.toString(), uri);
 
     if (headers case Map<String, String> headers) {
       request.headers.addAll(headers);
@@ -113,22 +112,22 @@ class DefaultHttpService implements HttpService {
       request.body = body;
     }
 
-    final streamedResponse = await request.send();
-    return Response.fromStream(streamedResponse);
+    final streamedResponse = await _client!.send(request);
+    return http.Response.fromStream(streamedResponse);
   }
 
   @override
-  Future<Response> sendByteStream(
+  Future<http.Response> sendByteStream(
     HttpMethod method,
     Uri uri,
-    ByteStream byteStream,
+    http.ByteStream byteStream,
     int length,
     Map<String, String> headers,
   ) async {
-    final request = MultipartRequest(method.toString(), uri);
+    final request = http.MultipartRequest(method.toString(), uri);
     request.headers.addAll(headers);
 
-    final multipartFile = MultipartFile(
+    final multipartFile = http.MultipartFile(
       'file',
       byteStream,
       length,
@@ -136,7 +135,7 @@ class DefaultHttpService implements HttpService {
     );
     request.files.add(multipartFile);
 
-    final streamedResponse = await request.send();
-    return Response.fromStream(streamedResponse);
+    final streamedResponse = await _client!.send(request);
+    return http.Response.fromStream(streamedResponse);
   }
 }

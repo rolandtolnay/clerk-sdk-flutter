@@ -1,4 +1,7 @@
-import 'package:clerk_flutter/clerk_flutter.dart';
+import 'package:clerk_flutter/src/widgets/ui/common.dart';
+import 'package:clerk_flutter/src/widgets/ui/input_label.dart';
+import 'package:clerk_flutter/src/widgets/ui/style/colors.dart';
+import 'package:clerk_flutter/src/widgets/ui/style/text_style.dart';
 import 'package:flutter/material.dart';
 
 /// A reusable and Clerk styled [TextFormField].
@@ -8,9 +11,10 @@ class ClerkTextFormField extends StatelessWidget {
   const ClerkTextFormField({
     super.key,
     this.label,
-    this.optional = false,
+    this.isOptional = false,
     this.obscureText = false,
     this.autofocus = false,
+    this.isMissing = false,
     this.onChanged,
     this.onSubmit,
     this.initial,
@@ -28,13 +32,16 @@ class ClerkTextFormField extends StatelessWidget {
   final String? label;
 
   /// Is this field optional?
-  final bool optional;
+  final bool isOptional;
 
   /// can we see the text or not?
   final bool obscureText;
 
   /// Should the input box immediately take focus?
   final bool autofocus;
+
+  /// Do we need to mark this field as required?
+  final bool isMissing;
 
   /// function to change obscurity
   final VoidCallback? onObscure;
@@ -48,45 +55,18 @@ class ClerkTextFormField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final translator = ClerkAuth.translatorOf(context);
     return Column(
       // crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (label case String label) //
-              Expanded(
-                child: Text(
-                  label,
-                  textAlign: TextAlign.start,
-                  maxLines: 2,
-                  style: ClerkTextStyle.inputLabel,
-                ),
-              ),
-            if (optional) ...[
-              spacer,
-              Text(
-                translator.translate('Optional'),
-                textAlign: TextAlign.end,
-                maxLines: 1,
-                style: ClerkTextStyle.inputLabel.copyWith(
-                  color: ClerkColors.stormGrey,
-                  fontSize: 12.0,
-                ),
-              ),
-            ],
-          ],
-        ),
+        InputLabel(label: label, isRequired: isMissing, isOptional: isOptional),
         verticalMargin4,
         SizedBox(
           height: 32.0,
           child: DecoratedBox(
             decoration: inputBoxBorderDecoration,
             child: _TextField(
-              label: label,
-              optional: optional,
+              optional: isOptional,
               obscureText: obscureText,
               onChanged: onChanged,
               onSubmit: onSubmit,
@@ -104,7 +84,6 @@ class ClerkTextFormField extends StatelessWidget {
 
 class _TextField extends StatefulWidget {
   const _TextField({
-    required this.label,
     required this.optional,
     required this.obscureText,
     required this.onChanged,
@@ -117,7 +96,6 @@ class _TextField extends StatefulWidget {
 
   final ValueChanged<String>? onChanged;
   final ValueChanged<String>? onSubmit;
-  final String? label;
   final bool optional;
   final bool obscureText;
   final bool autofocus;
@@ -143,6 +121,7 @@ class _TextFieldState extends State<_TextField> {
       onChanged: widget.onChanged,
       onFieldSubmitted: widget.onSubmit,
       obscureText: widget.obscureText,
+      obscuringCharacter: '\u25CF', // Unicode: Black Circle
       validator: (text) {
         if (widget.validator?.call(text) case bool valid) {
           WidgetsBinding.instance.addPostFrameCallback(

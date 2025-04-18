@@ -1,13 +1,16 @@
 import 'package:clerk_auth/src/models/enums.dart';
 import 'package:clerk_auth/src/models/environment.dart';
+import 'package:clerk_auth/src/models/informative_to_string_mixin.dart';
 import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:meta/meta.dart';
 
 part 'user_settings.g.dart';
 
 /// [UserSettings] Clerk object
+@immutable
 @JsonSerializable()
-class UserSettings {
+class UserSettings with InformativeToStringMixin {
   /// Constructor
   const UserSettings({
     this.attributes = const {},
@@ -67,6 +70,7 @@ class UserSettings {
       _$UserSettingsFromJson(json);
 
   /// toJson
+  @override
   Map<String, dynamic> toJson() => _$UserSettingsToJson(this);
 }
 
