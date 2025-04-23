@@ -408,7 +408,6 @@ class Auth {
     String? code,
     String? token,
     String? signature,
-    bool? legalAccepted,
   }) async {
     if (password != passwordConfirmation) {
       throw ClerkAuthException(
@@ -481,12 +480,16 @@ class Auth {
       }
     }
 
-    if (client.signUp case SignUp signUp
-        when signUp.missingFields.contains(Field.legalAccepted) &&
-            legalAccepted is bool) {
-      await _api
-          .updateSignUp(signUp, legalAccepted: legalAccepted)
-          .then(_housekeeping);
+    update();
+    return client;
+  }
+
+  /// Mark the current [SignUp] as having accepted the legal terms
+  ///
+  /// Returns the updated [Client] object after marking the legal terms as accepted.
+  Future<Client> markLegalAccepted() async {
+    if (client.signUp case SignUp signUp) {
+      await _api.updateSignUp(signUp, legalAccepted: true).then(_housekeeping);
     }
 
     update();
