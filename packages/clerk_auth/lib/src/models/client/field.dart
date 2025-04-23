@@ -25,10 +25,14 @@ class Field {
   /// username
   static const username = Field._('username');
 
+  /// legal accepted
+  static const legalAccepted = Field._('legal_accepted');
+
   static final _values = <String, Field>{
     phoneNumber.name: phoneNumber,
     emailAddress.name: emailAddress,
     username.name: username,
+    legalAccepted.name: legalAccepted,
   };
 
   /// The [values] of the Fields

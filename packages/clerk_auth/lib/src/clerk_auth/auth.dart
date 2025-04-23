@@ -408,6 +408,7 @@ class Auth {
     String? code,
     String? token,
     String? signature,
+    bool? legalAccepted,
   }) async {
     if (password != passwordConfirmation) {
       throw ClerkAuthException(
@@ -478,6 +479,14 @@ class Auth {
               )
               .then(_housekeeping);
       }
+    }
+
+    if (client.signUp case SignUp signUp
+        when signUp.missingFields.contains(Field.legalAccepted) &&
+            legalAccepted is bool) {
+      await _api
+          .updateSignUp(signUp, legalAccepted: legalAccepted)
+          .then(_housekeeping);
     }
 
     update();

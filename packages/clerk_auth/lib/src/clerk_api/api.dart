@@ -223,6 +223,7 @@ class Api with Logging {
     String? web3Wallet,
     String? code,
     String? token,
+    bool? legalAccepted,
     Map<String, dynamic>? metadata,
   }) async {
     return await _fetchApiResponse(
@@ -239,6 +240,7 @@ class Api with Logging {
         'web3_wallet': web3Wallet,
         'code': code,
         'token': token,
+        'legal_accepted': legalAccepted,
         if (metadata is Map) //
           'unsafe_metadata': json.encode(metadata!),
       },
