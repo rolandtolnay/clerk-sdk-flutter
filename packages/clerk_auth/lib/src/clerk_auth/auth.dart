@@ -467,7 +467,8 @@ class Auth {
 
         case SignUp signUp when signUp.status == Status.missingRequirements:
           await _api
-              .createSignUp(
+              .updateSignUp(
+                signUp,
                 strategy: strategy,
                 firstName: firstName,
                 lastName: lastName,
