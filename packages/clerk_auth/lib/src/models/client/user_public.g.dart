@@ -7,7 +7,7 @@ part of 'user_public.dart';
 // **************************************************************************
 
 UserPublic _$UserPublicFromJson(Map<String, dynamic> json) => UserPublic(
-      identifier: json['identifier'] as String,
+      identifier: json['identifier'] as String?,
       firstName: json['first_name'] as String?,
       lastName: json['last_name'] as String?,
       profileImageUrl: json['profile_image_url'] as String?,

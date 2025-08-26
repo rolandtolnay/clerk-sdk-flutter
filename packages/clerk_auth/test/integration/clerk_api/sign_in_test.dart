@@ -68,7 +68,7 @@ void main() {
         expect(client?.signIn, null);
         expect(client?.activeSession?.status, Status.active);
         expect(
-            client?.activeSession?.publicUserData.identifier.isNotEmpty, true);
+            client?.activeSession?.publicUserData.identifier?.isNotEmpty, true);
       });
     });
 
@@ -115,7 +115,7 @@ void main() {
         expect(client?.signIn, null);
         expect(client?.activeSession?.status, Status.active);
         expect(
-            client?.activeSession?.publicUserData.identifier.isNotEmpty, true);
+            client?.activeSession?.publicUserData.identifier?.isNotEmpty, true);
       });
     });
 
@@ -199,7 +199,7 @@ void main() {
         expect(client?.signIn, null);
         expect(client?.activeSession?.status, Status.active);
         expect(
-            client?.activeSession?.publicUserData.identifier.isNotEmpty, true);
+            client?.activeSession?.publicUserData.identifier?.isNotEmpty, true);
       });
     });
   });
