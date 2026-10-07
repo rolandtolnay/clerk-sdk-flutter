@@ -902,7 +902,13 @@ class Api with Logging {
     }
   }
 
-  dynamic _ensureNotNullOrEmpty(dynamic param) {
+  dynamic _normalizeParam(String key, dynamic param) {
+    // Passwords are opaque credentials, including whitespace and empty strings.
+    if (key == 'password' ||
+        key == 'current_password' ||
+        key == 'new_password') {
+      return param;
+    }
     if (param case String param) {
       return param.trim().orNullIfEmpty;
     }
@@ -921,7 +927,7 @@ class Api with Logging {
       for (final MapEntry(:key, :value) in (params ?? const {}).entries)
         if (nullableKeys?.contains(key) == true)
           key: value
-        else if (_ensureNotNullOrEmpty(value) case final value?)
+        else if (_normalizeParam(key, value) case final value?)
           key: value,
     };
     final queryParams =
