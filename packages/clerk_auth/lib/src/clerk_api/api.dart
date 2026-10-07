@@ -137,6 +137,7 @@ class Api with Logging {
   }
 
   Future<bool> _delete(String path, {bool requiresSessionId = false}) async {
+    _tokenCache.clear();
     try {
       final headers = _headers(method: HttpMethod.delete);
       final resp = await _fetch(
@@ -146,7 +147,6 @@ class Api with Logging {
         withSession: requiresSessionId,
       );
       if (resp.statusCode == 200) {
-        _tokenCache.clear();
         return true;
       } else {
         logSevere('HTTP error on DELETE $path: ${resp.statusCode}', resp.body);
