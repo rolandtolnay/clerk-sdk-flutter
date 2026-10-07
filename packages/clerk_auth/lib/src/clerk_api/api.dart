@@ -902,6 +902,13 @@ class Api with Logging {
     }
   }
 
+  dynamic _ensureNotNullOrEmpty(dynamic param) {
+    if (param case String param) {
+      return param.trim().orNullIfEmpty;
+    }
+    return param;
+  }
+
   Future<http.Response> _fetch({
     required String path,
     HttpMethod method = HttpMethod.post,
@@ -910,9 +917,13 @@ class Api with Logging {
     bool withSession = false,
     List<String>? nullableKeys,
   }) async {
-    final parsedParams = {...?params}..removeWhere(
-        (key, value) => nullableKeys?.contains(key) != true && value == null,
-      );
+    final parsedParams = {
+      for (final MapEntry(:key, :value) in (params ?? const {}).entries)
+        if (nullableKeys?.contains(key) == true)
+          key: value
+        else if (_ensureNotNullOrEmpty(value) case final value?)
+          key: value,
+    };
     final queryParams =
         _queryParams(method, withSession: withSession, params: parsedParams);
     final uri = _uri(path, params: queryParams);
@@ -976,7 +987,7 @@ class Api with Logging {
       HttpHeaders.contentTypeHeader: method.isGet
           ? 'application/json'
           : 'application/x-www-form-urlencoded',
-      if (_tokenCache.clientToken.isNotEmpty) //
+      if (_tokenCache.hasClientToken) //
         HttpHeaders.authorizationHeader: _tokenCache.clientToken,
       _kClerkAPIVersion: ClerkConstants.clerkApiVersion,
       _kXFlutterSDKVersion: ClerkConstants.flutterSdkVersion,
