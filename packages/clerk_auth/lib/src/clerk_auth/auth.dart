@@ -362,6 +362,20 @@ class Auth {
     update();
   }
 
+  /// Create a [SignIn] for [identifier] without starting any first factor
+  ///
+  /// Afterwards [client.signIn] has [Status.needsFirstFactor] and its
+  /// [SignIn.supportedFirstFactors] lists the strategies available to that
+  /// account (e.g. [Strategy.emailCode], and [Strategy.password] for accounts
+  /// with a password set). No verification code is sent.
+  ///
+  /// Follow up with [attemptSignIn] using the chosen strategy.
+  ///
+  Future<void> identifySignIn({required String identifier}) async {
+    await _api.createSignIn(identifier: identifier).then(_housekeeping);
+    update();
+  }
+
   /// Resends a verification code for the current sign in or sign up attempt
   ///
   /// Takes a required [strategy] parameter which must be a code-based strategy
