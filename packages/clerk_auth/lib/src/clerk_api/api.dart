@@ -137,15 +137,20 @@ class Api with Logging {
   }
 
   Future<bool> _delete(String path, {bool requiresSessionId = false}) async {
-    _tokenCache.clear();
     try {
       final headers = _headers(method: HttpMethod.delete);
-      final resp = await _fetch(
+      final request = _fetch(
         method: HttpMethod.delete,
         path: path,
         headers: headers,
+        params: {
+          if (requiresSessionId) _kClerkSessionId: _tokenCache.sessionId,
+        },
         withSession: requiresSessionId,
       );
+      // Prepare the request with its credentials before clearing local state.
+      _tokenCache.clear();
+      final resp = await request;
       if (resp.statusCode == 200) {
         return true;
       } else {
